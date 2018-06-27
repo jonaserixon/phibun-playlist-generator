@@ -1,0 +1,31 @@
+{
+  "name": "phicloud",
+  "version": "1.0.0",
+  "description": "soundcloud api",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonaserixon/phicloud.git"
+  },
+  "keywords": [
+    "soundcloud"
+  ],
+  "author": "Jonas Erixon",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jonaserixon/phicloud/issues"
+  },
+  "homepage": "https://github.com/jonaserixon/phicloud#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "helmet": "^3.12.1",
+    "mongodb": "^3.1.0",
+    "morgan": "^1.9.0",
+    "nodemon": "^1.17.5"
+  }
+}
