@@ -25,11 +25,14 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "concurrently": "^3.6.0",
+    "cors": "^2.8.4",
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "helmet": "^3.12.1",
     "mongoose": "^5.1.7",
     "morgan": "^1.9.0",
-    "nodemon": "^1.17.5"
+    "nodemon": "^1.17.5",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5"
   }
 }
