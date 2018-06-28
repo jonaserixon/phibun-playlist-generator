@@ -9,7 +9,7 @@ const start = () => {
     app.use(bodyParser.urlencoded({ extended: true }));
 
     //API
-    app.use('/api/', require('./routes/test'));
+    app.use('/api/spotify/', require('./routes/spotify/auth'));
 
     app.listen(process.env['SERVER_PORT'], () => {
         console.log('Express listening on port ' + process.env['SERVER_PORT'])

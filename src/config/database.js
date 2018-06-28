@@ -1,14 +1,15 @@
-'use strict';
+const mongoose = require('mongoose');
+ 
+module.exports = {
+    initialize: () => {
+        let db = mongoose.connection;
 
-module.exports = () => {
-    const MongoClient = require('mongodb').MongoClient;
+        db.on("error", console.error.bind(console, "connection error:"));
 
-    const uri = process.env['DB_CONNECTION_STRING'];
-    MongoClient.connect(uri, { useNewUrlParser: true }, (err, client) => {
-        console.log('Successfully connected to MongoDB')
-       //const collection = client.db("test").collection("devices");
-       // perform actions on the collection object
-       //client.close();
-    });
-}
+        db.once("open", () => {
+            console.log("Succesfully connected to mongoDB \n----");
+        });
 
+        mongoose.connect(process.env['DB_CONNECTION_STRING']);
+    }
+};

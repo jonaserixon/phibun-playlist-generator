@@ -3,6 +3,5 @@ const dotenv = require('dotenv');
 const database = require('./src/config/database');
 
 dotenv.config();
-database();
-
+database.initialize();
 server.start();
