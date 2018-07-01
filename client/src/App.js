@@ -6,13 +6,9 @@ import {Grid, Row, Col, Button} from 'react-bootstrap';
 import { Router } from 'react-router-dom';
 
 import {requestOptions} from './helpers/requestOptions';
+import Login from './components/login';
+import Dashboard from './components/dashboard';
 
-
-const client_id = 'afbeb47d1f9745c6a724c4276d96ecbc';
-const scopes = 'user-read-private user-read-email';
-const redirect_uri = 'http://localhost:3000/callback';
-
-const auth_string = 'https://accounts.spotify.com/authorize?response_type=code&client_id=' + client_id + '&scope=' + scopes + '&redirect_uri=' + redirect_uri;
 
 class App extends Component {
     constructor(props) {
@@ -20,81 +16,41 @@ class App extends Component {
 
         this.state = {
             isLoggedIn: false,
-            userInfo: {}
         };
 
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.callbackLogin = this.callbackLogin.bind(this);
     }
 
-    handleSubmit(event) {
-        event.preventDefault();
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        this.setState({isLoggedIn: false});
+    callbackLogin(isUserLoggedIn) {
+        this.setState({isLoggedIn: isUserLoggedIn});
     }
 
-    async getUserInfo() {
-        const token = { access_token: localStorage.getItem('access_token')};
-        let response = await fetch('/api/spotify/user-info', requestOptions(JSON.stringify(token), 'POST'));
-        let json = await response.json();
-
-        this.setState({userInfo: json})
-        return json;
-    }
-
-    async componentWillMount() {
-        if (history.location.pathname === '/callback') {
-            const params = (new URL(document.location)).searchParams;
-            const callbackCode = { code: params.get('code') };
-
-            let response = await fetch('/api/spotify/login', requestOptions(JSON.stringify(callbackCode), 'POST'));
-            let json = await response.json();
-            localStorage.setItem('access_token', json.access_token);
-            localStorage.setItem('refresh_token', json.refresh_token);
-        }
-
+    async componentDidUpdate() {
         if (localStorage.getItem('access_token')) {
-            this.setState({isLoggedIn: true});
-            history.push('/'); 
-            this.getUserInfo();
-        } else {
-            this.setState({isLoggedIn: false});
+            const token = { access_token: localStorage.getItem('access_token')};
+
+            let response = await fetch('/api/spotify/user-info', requestOptions(JSON.stringify(token), 'POST'));
+            
+            if (response.status === 401) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                this.setState({isLoggedIn: false});
+            }
         }
     }
     
     render() {
-        let isLoggedIn;
-        console.log('Logged in: ' + this.state.isLoggedIn);
-
-        if (this.state.isLoggedIn) {
-            console.log(this.state.userInfo);
-            isLoggedIn = 
-            <div>
-                <form onSubmit={this.handleSubmit}>
-                    <Button bsStyle="success" type={"submit"}>
-                        Logout
-                    </Button>
-                </form>
-                <p>
-                    Welcome, {this.state.userInfo.display_name}
-                </p>
-            </div>
-        } else {
-            isLoggedIn = 
-            <div>
-                <a href={auth_string}>
-                    <Button bsStyle="success" type={"submit"}>
-                        Login with your Spotify Account!
-                    </Button>
-                </a>;
-            </div>
-        }
+        console.log('app page')
 
         return (
             <Router history={history}>
                 <div className="App">
                     <p>PhiCloud Client!</p>
-                    {isLoggedIn}
+                    {this.state.isLoggedIn ? (
+                        <Dashboard callback={this.callbackLogin}/>
+                    ) : (
+                        <Login callback={this.callbackLogin}/>
+                    )}
                 </div>
             </Router>
         );

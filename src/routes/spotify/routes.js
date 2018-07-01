@@ -36,7 +36,8 @@ router.post('/refresh-token', async (req, res) => {
 
 router.post('/user-info', async (req, res) => {
     console.log(req.body.access_token);
-    console.log('_______________________')
+    console.log('_______________________');
+
     const options = {
         url: 'https://api.spotify.com/v1/me',
         headers: {
@@ -44,12 +45,17 @@ router.post('/user-info', async (req, res) => {
         },
         method: 'GET',
         json: true
+    };
+
+    try {
+        let parsedBody = await request(options);
+        console.log('success')
+        res.status(200).json(parsedBody);
+    } catch(error) { 
+        console.log('error')
+        res.status(401).json(error) 
     }
 
-    let parsedBody = await request(options);
-    console.log(parsedBody);
-
-    res.status(200).json(parsedBody);
 });
 
 module.exports = router;
