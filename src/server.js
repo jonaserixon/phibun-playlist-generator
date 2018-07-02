@@ -11,7 +11,8 @@ const start = () => {
     app.use(cors());
 
     //API
-    app.use('/api/spotify/', require('./routes/spotify/routes'));
+    app.use('/api/spotify', require('./routes/spotify/routes'));
+    app.use('/api/reddit', require('./routes/reddit/routes'));
 
     app.listen(process.env['SERVER_PORT'], () => {
         console.log('Express listening on port ' + process.env['SERVER_PORT'])

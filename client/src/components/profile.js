@@ -30,32 +30,37 @@ class Profile extends Component {
     async getUserInfo() {
         const token = { access_token: localStorage.getItem('access_token')};
 
-        let response = await fetch('/api/spotify/user-info', requestOptions(JSON.stringify(token), 'POST'));
+        let response = await fetch('/api/spotify/user-info', requestOptions(token, 'POST'));
         let json = await response.json();
 
         this.setState({userInfo: json});
         this.setState({isLoading: false});
-
+        this.props.usernameCallback(this.state.userInfo.id);
         console.log(this.state.userInfo);
     }
 
     contentToRender() {
         return (
-            <Grid>
-                <Row>
-                    <Col md={3}>
-                        <Panel>
-                            <Panel.Heading>
-                                <Panel.Title componentClass="h3">{this.state.userInfo.display_name}</Panel.Title>
-                            </Panel.Heading>
-                            <Image src={this.state.userInfo.images[0].url} width={"200px"} height={"200px"} circle />
-                            <Panel.Body>
-                                Information about the user
-                            </Panel.Body>
-                        </Panel>
-                    </Col>
-                </Row>
-            </Grid>
+            <Row>
+                <Col md={12}>
+                    <Panel>
+                        <Row>
+                            <Col md={12}>
+                                <a href={this.state.userInfo.external_urls.spotify}>
+                                    <Image src={this.state.userInfo.images[0].url} width={"100%"} thumbnail/>
+                                </a>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col md={12}>
+                                <Panel.Body>
+                                    Logged in as <strong>{this.state.userInfo.id}</strong>
+                                </Panel.Body>
+                            </Col>
+                        </Row>
+                    </Panel>
+                </Col>
+            </Row>
         );
     }
     

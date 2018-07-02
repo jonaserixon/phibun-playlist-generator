@@ -1,6 +1,6 @@
-export function requestOptions(access_token, method) {
+export function requestOptions(data, method) {
     let options = {
-        body: access_token,
+        body: JSON.stringify(data),
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'

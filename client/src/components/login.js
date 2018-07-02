@@ -5,7 +5,7 @@ import {Grid, Row, Col, Button} from 'react-bootstrap';
 import {requestOptions} from '../helpers/requestOptions';
 
 const client_id = 'afbeb47d1f9745c6a724c4276d96ecbc';
-const scopes = 'user-read-private user-read-email';
+const scopes = 'user-read-private user-read-email playlist-read-private';
 const redirect_uri = 'http://localhost:3000/callback';
 
 const auth_string = 'https://accounts.spotify.com/authorize?response_type=code&client_id=' + client_id + '&scope=' + scopes + '&redirect_uri=' + redirect_uri;
@@ -17,14 +17,13 @@ class Login extends Component {
         this.state = {
 
         };
-
     }
 
     async componentWillMount() {
         if (history.location.pathname === '/callback') {
             const params = (new URL(document.location)).searchParams;
             const callbackCode = { code: params.get('code') };
-            let response = await fetch('/api/spotify/login', requestOptions(JSON.stringify(callbackCode), 'POST'));
+            let response = await fetch('/api/spotify/login', requestOptions(callbackCode, 'POST'));
             let json = await response.json();
             localStorage.setItem('access_token', json.access_token);
             localStorage.setItem('refresh_token', json.refresh_token);

@@ -1,15 +1,34 @@
+::selection { background:#ff70cd; color: black; }
+::-moz-selection { background:#ff70cd; color: black;}
+
+html {
+    background-color: lightgray;
+}
+
 .App {
-
+    height: 100vh;
 }
 
-.Dashboard {
-  
+.dashboard-container {
+    background-color: ghostwhite;
+    padding: 10px;
+    border: 1px solid grey;
+    border-radius: 5px;
 }
 
-.Login {
-
+.dashboard-container a {
+    text-decoration: none;
+    color: black;
 }
 
-.Profile {
+.content-container {
+    background-color: ghostwhite;
+    height: 80vh;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+}
 
+.dashboard-icon {
+    margin-right: 5px;
+    font-size: 13px;
 }

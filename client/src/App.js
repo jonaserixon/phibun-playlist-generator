@@ -9,7 +9,6 @@ import {requestOptions} from './helpers/requestOptions';
 import Login from './components/login';
 import Dashboard from './components/dashboard';
 
-
 class App extends Component {
     constructor(props) {
         super(props);
@@ -28,8 +27,8 @@ class App extends Component {
     async componentDidUpdate() {
         if (localStorage.getItem('access_token')) {
             const token = { access_token: localStorage.getItem('access_token')};
-
-            let response = await fetch('/api/spotify/user-info', requestOptions(JSON.stringify(token), 'POST'));
+            
+            let response = await fetch('/api/spotify/user-info', requestOptions(token, 'POST'));
             
             if (response.status === 401) {
                 localStorage.removeItem('access_token');
