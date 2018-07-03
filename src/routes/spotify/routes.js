@@ -4,7 +4,7 @@ const request = require('request-promise-native');
 const client_secret = process.env['SPOTIFY_SECRET'];
 const client_id = process.env['SPOTIFY_ID'];
 
-const baseUrl = 'https://api.spotify.com/v1';
+const baseUrl = 'https://api.spotify.com/v1/';
 
 router.post('/login', async (req, res) => {
     const options = {
@@ -39,7 +39,7 @@ router.post('/refresh-token', async (req, res) => {
 
 router.post('/user-info', async (req, res) => {
     const options = {
-        url: baseUrl + '/v1/me',
+        url: baseUrl + 'me',
         headers: {
             'Authorization': 'Bearer ' + req.body.access_token
         },
@@ -57,7 +57,7 @@ router.post('/user-info', async (req, res) => {
 
 router.post('/get-playlists', async (req, res) => {
     const options = {
-        url: baseUrl + '/me/playlists',
+        url: baseUrl + 'me/playlists',
         headers: {
             'Authorization': 'Bearer ' + req.body.access_token
         },
@@ -67,8 +67,8 @@ router.post('/get-playlists', async (req, res) => {
 
     try {
         const parsedBody = await request(options);
-        const userPlaylists = parsedBody.items.filter((playlist) => playlist.owner.id === req.body.id);
-        res.status(200).json(userPlaylists);
+        const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud - Weekly Hits');
+        res.status(200).json(appPlaylist);
     } catch(error) {
         res.status(401).json(error) 
     }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import history from '../history';
-import {Grid, Row, Col, Button, Panel, Image} from 'react-bootstrap';
+import {Grid, Row, Col, Button, Panel, Image, Form, FormGroup, FormControl, ControlLabel} from 'react-bootstrap';
 
 import {requestOptions} from '../helpers/requestOptions';
 
@@ -12,11 +12,42 @@ class Playlist extends Component {
             isLoading: true,
             playlists: []
         };
+
+        this.handleOnClick = this.handleOnClick.bind(this);
+
+        this.test = this.test.bind(this);
+    }
+
+    async test(event) {
+        event.preventDefault();
+        // const genre = event.target.elements.genre.value;
+        
+        const data = { 
+            access_token: localStorage.getItem('access_token'),
+            // user_id: this.props.username
+        };
+
+        const response = await fetch('/api/spotify/get-playlists', requestOptions(data, 'POST'));
+        const json = await response.json();
+        console.log(json);
+    }
+
+    async handleOnClick(event) {
+        event.preventDefault();
+        // const genre = event.target.elements.genre.value;
+        
+        const data = { 
+            access_token: localStorage.getItem('access_token'),
+            user_id: this.props.username
+        };
+
+        const response = await fetch('/api/reddit/phicloud-playlist', requestOptions(data, 'POST'));
+        const json = await response.json();
+        console.log(json);
     }
 
     componentWillMount() {
         this.setState({isLoading: true});
-        this.getUserPlaylists();
     }
 
     componentDidMount() {
@@ -26,58 +57,28 @@ class Playlist extends Component {
             this.setState({isLoading: false});
         }
     }
-
-    async getUserPlaylists() {
-        const data = { 
-            access_token: localStorage.getItem('access_token'),
-            id: this.props.username
-        };
-
-        let response = await fetch('/api/spotify/get-playlists', requestOptions(data, 'POST'));
-        let json = await response.json();
-
-        this.setState({playlists: json});
-        this.setState({isLoading: false});
-        console.log(this.state.playlists);
-    }
-
-    createPlaylistThumbnails() {
-        let playlists = this.state.playlists.map((playlist) => {
-            return (
-                <div>
-                    <Row>
-                        <Col md={4}>
-                            <Image src={playlist.images[0].url} width={"200px"} height={"200px"} thumbnail/>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col md={4}>
-                            <Panel.Body>
-                                <strong>{playlist.name}</strong>
-                            </Panel.Body>
-                        </Col>
-                    </Row>
-                </div>
-            )
-        })
-        return playlists;
-    }
-    
     
     render() {
-        console.log('playlist page')
-
-        let renderThis;
-        if (this.state.isLoading) {
-            renderThis = <p>Loading playlists, please wait...</p>
-        } else {
-            renderThis = this.createPlaylistThumbnails();
-        }
-
         return (
             <div className="Playlist">
                 <h2>Playlist page</h2>
-                {renderThis}
+                <Button bsStyle={"primary"} onClick={this.test}>Get Playlists</Button>
+                <Form horizontal onSubmit={this.handleOnClick}>
+                    <FormGroup>
+                        <Col componentClass={ControlLabel} sm={2}>
+                            Genre
+                        </Col>
+                        <Col sm={2}>
+                            <FormControl name="genre" type="text" placeholder="Genre" />
+                        </Col>
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Col smOffset={2} sm={10}>
+                            <Button bsStyle={"primary"} type="submit">Create Playlist!</Button>
+                        </Col>
+                    </FormGroup>
+                </Form>
             </div>
         );
     }

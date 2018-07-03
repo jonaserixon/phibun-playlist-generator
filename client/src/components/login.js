@@ -5,7 +5,7 @@ import {Grid, Row, Col, Button} from 'react-bootstrap';
 import {requestOptions} from '../helpers/requestOptions';
 
 const client_id = 'afbeb47d1f9745c6a724c4276d96ecbc';
-const scopes = 'user-read-private user-read-email playlist-read-private';
+const scopes = 'user-read-private user-read-email playlist-read-private playlist-modify-private playlist-modify-public';
 const redirect_uri = 'http://localhost:3000/callback';
 
 const auth_string = 'https://accounts.spotify.com/authorize?response_type=code&client_id=' + client_id + '&scope=' + scopes + '&redirect_uri=' + redirect_uri;

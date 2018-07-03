@@ -25,8 +25,7 @@ class Dashboard extends Component {
         event.preventDefault();
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-
-        this.props.callback(false);
+        this.props.callback(false); //Telling App.js that a user has logged out
     }
 
     setUsername(username) {
