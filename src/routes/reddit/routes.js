@@ -18,7 +18,7 @@ router.get('/auth', async (req, res) => {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')),
-            'User-Agent': 'webapp:phicloud (by /u/ingen_alls)'
+            'User-Agent': process.env['REDDIT_USER_AGENT']
         },
         method: 'POST',
         json: true
@@ -26,9 +26,7 @@ router.get('/auth', async (req, res) => {
 
     try {
         const parsedBody = await request(options);
-
         await removeExistingAccessToken();
-
         const token = new RedditModel({access_token: parsedBody.access_token});
         token.save((err) => {
             if (!err) res.status(200).json(parsedBody);
@@ -56,11 +54,10 @@ router.post('/phicloud-playlist', async (req, res) => {
         const sorted = sorter(tracks);
         const searchResult = await searchSpotify(sorted, access_token);
         const doesPlaylistExist = await getPlaylist(access_token);
-        if (doesPlaylistExist.length < 1) {
-            await createPlaylist(user_id, access_token);
-        }
-
-        
+        if (doesPlaylistExist.length < 1) await createPlaylist(user_id, access_token);
+        const playlist = await getPlaylist(access_token);  //fult som fan
+        console.log(playlist[0].id);
+        await replaceTracksPlaylist(playlist[0].id, user_id, access_token, searchResult);
 
         res.status(200).json(searchResult);
     } catch(err) { 
@@ -69,6 +66,7 @@ router.post('/phicloud-playlist', async (req, res) => {
 });
 
 function getAccessToken() {
+    //Om den inte hittar en token så gör en request till /auth
     return (
         RedditModel.find({})
         .exec()
@@ -98,7 +96,7 @@ function createOptions(access_token, url) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': 'Bearer ' + access_token,
-            'User-Agent': 'webapp:phicloud (by /u/ingen_alls)'
+            'User-Agent': process.env['REDDIT_USER_AGENT']
         },
         method: 'GET',
         json: true
@@ -108,13 +106,12 @@ function createOptions(access_token, url) {
 }
 
 async function collector() {
-    //Collect songs from multiple subreddits
     const access_token = await getAccessToken();
 
     try {
         return new Promise(async resolve => {
-            const listentothis = await request(createOptions(access_token, 'r/listentothis/hot?limit=25'));
-            const music = await request(createOptions(access_token, 'r/music/hot?limit=25'));
+            const listentothis = await request(createOptions(access_token, 'r/listentothis/hot?limit=100'));
+            const music = await request(createOptions(access_token, 'r/music/hot?limit=100'));
 
             let tracks = [];
 
@@ -153,7 +150,7 @@ function sorter(tracks) {
             if (!/\d/.test(year)) year = null;
         }        
         
-        let object = {
+        const object = {
             title: track.title.substring(0, track.title.indexOf('[')),
             year,
             genre
@@ -161,8 +158,22 @@ function sorter(tracks) {
 
         trackList.push(object);
     })
-    return trackList;
+    
+    return getUniqueTracklist(50, trackList);
 }
+
+function getUniqueTracklist(count, array) {
+    const tmp = array.slice(array);
+    const tracks = [];
+    
+    for (let i = 0; i < count; i++) {
+        const index = Math.floor(Math.random() * tmp.length);
+        const removed = tmp.splice(index, 1);
+        tracks.push(removed[0]);
+    }
+    return tracks;
+}
+
 
 //SPOTIFY
 function searchSpotify(tracks, access_token) {
@@ -183,14 +194,18 @@ function searchSpotify(tracks, access_token) {
             };
 
             const parsedTrack = await request(options);
-            resolve(parsedTrack.tracks.items[0]);
+            if (parsedTrack.tracks.items[0] !== undefined && parsedTrack.tracks.items[0]) {
+                resolve(parsedTrack.tracks.items[0].uri);
+            } else {
+                resolve(parsedTrack.tracks.items[0]);
+            }
         })
     })
 
     return Promise.all(promises)
         .then((result) => {
-            console.log(result);
-            return result;
+            const uris = result.filter(uri => uri);
+            return getUniqueTracklist(10, uris);
         }).catch((err) => {
             console.log(err);
         })
@@ -200,7 +215,9 @@ async function createPlaylist(user_id, access_token) {
     const options = {
         url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/',
         body: {
-            name: 'PhiCloud - Weekly Hits',
+            name: 'PhiCloud',
+            public: false,
+            description: 'A PhiCloud generated playlist!'
         },
         headers: {
             'Content-Type': 'application/json',
@@ -230,19 +247,34 @@ async function getPlaylist(access_token) {
 
     try {
         const parsedBody = await request(options);
-        const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud - Weekly Hits');
+        const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud');
         return appPlaylist;
     } catch(err) {
-        console.log(err);
+        console.log('err i getplaylist()');
     }
 }
 
-async function addTracksPlaylist() {
+async function replaceTracksPlaylist(playlist_id, user_id, access_token, tracks) {
+    const options = {
+        url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/' + playlist_id + '/tracks',
+        body: {
+            uris: tracks
+        },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + access_token
+        },
+        method: 'PUT',
+        json: true
+    };
 
-}
-
-async function replaceTracksPlaylist() {
-
+    try {
+        await request(options);
+        console.log('successfully replaced tracks to playlist! =)')
+        return {status: 201};
+    } catch(err) {
+        console.log(err);
+    }
 }
 
 module.exports = router;
