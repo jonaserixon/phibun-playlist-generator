@@ -67,7 +67,7 @@ router.post('/get-playlists', async (req, res) => {
 
     try {
         const parsedBody = await request(options);
-        const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud - Weekly Hits');
+        const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud');
         res.status(200).json(appPlaylist);
     } catch(error) {
         res.status(401).json(error) 

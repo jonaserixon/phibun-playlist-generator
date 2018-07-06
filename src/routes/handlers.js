@@ -1,71 +1,6 @@
-const router = require('express').Router();
 const request = require('request-promise-native');
 
-const mongoose = require('mongoose');
-const RedditModel = require('../../models/redditAuth').model('RedditAuth');
-
-const client_secret = process.env['REDDIT_SECRET'];
-const client_id = process.env['REDDIT_ID'];
-
-const baseUrl = 'https://oauth.reddit.com/';
-
-router.get('/auth', async (req, res) => {
-    const options = {
-        url: 'https://www.reddit.com/api/v1/access_token',
-        form: {
-            grant_type: 'client_credentials'
-        },
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64')),
-            'User-Agent': process.env['REDDIT_USER_AGENT']
-        },
-        method: 'POST',
-        json: true
-    }
-
-    try {
-        const parsedBody = await request(options);
-        await removeExistingAccessToken();
-        const token = new RedditModel({access_token: parsedBody.access_token});
-        token.save((err) => {
-            if (!err) res.status(200).json(parsedBody);
-        });
-        
-    } catch(err) { 
-        res.status(401).json(err) 
-    }
-});
-
-router.post('/callback', async (req, res) => {
-    res.json({message: 'Reddit callback route'})
-});
-
-router.post('/phicloud-playlist', async (req, res) => {
-    //Hämta alla låtar från reddit
-    //Filtrera ut låtar
-    //Sök efter låtarna på Spotify
-    //CRUD playlist
-    const access_token = req.body.access_token;
-    const user_id = req.body.user_id;
-
-    try {
-        const tracks = await collector();
-        const sorted = sorter(tracks);
-        const searchResult = await searchSpotify(sorted, access_token);
-        const doesPlaylistExist = await getPlaylist(access_token);
-        if (doesPlaylistExist.length < 1) await createPlaylist(user_id, access_token);
-        const playlist = await getPlaylist(access_token);  //fult som fan
-        console.log(playlist[0].id);
-        await replaceTracksPlaylist(playlist[0].id, user_id, access_token, searchResult);
-
-        res.status(200).json(searchResult);
-    } catch(err) { 
-        res.status(401).json(err) 
-    }
-});
-
-function getAccessToken() {
+const getAccessToken = (RedditModel) => {
     //Om den inte hittar en token så gör en request till /auth
     return (
         RedditModel.find({})
@@ -73,26 +8,26 @@ function getAccessToken() {
         .then((token) => {
             return token[0].access_token;
         }).catch((err) => {
-            console.log(err);
+            throw new Error(err);
         })
     )
 }
 
-function removeExistingAccessToken() {
+const removeExistingAccessToken = (RedditModel) => {
     return (
         RedditModel.find({})
         .exec()
         .then((token) => {
             if (token.length > 0) token[0].remove();
         }).catch((err) => {
-            console.log(err);
+            throw new Error(err);
         })
     )
 }
 
-function createOptions(access_token, url) {
+const createOptions = (access_token, url) => {
     const options = {
-        url: baseUrl + url,
+        url: 'https://oauth.reddit.com/' + url,
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': 'Bearer ' + access_token,
@@ -105,13 +40,11 @@ function createOptions(access_token, url) {
     return options;
 }
 
-async function collector() {
-    const access_token = await getAccessToken();
-
+const getTracksFromReddit = async (access_token) => {
     try {
         return new Promise(async resolve => {
-            const listentothis = await request(createOptions(access_token, 'r/listentothis/hot?limit=100'));
-            const music = await request(createOptions(access_token, 'r/music/hot?limit=100'));
+            const listentothis = await request(createOptions(access_token, 'r/listentothis/top?t=day&limit=100'));
+            const music = await request(createOptions(access_token, 'r/music/top?t=day&limit=100'));
 
             let tracks = [];
 
@@ -127,17 +60,16 @@ async function collector() {
             return tracks;
         })
     } catch(err) {
-        console.log(err);
+        throw new Error(err);
     }
 }
 
-function sorter(tracks) {
-    //Sort all the tracks from collector() based on whether it is a YouTube link or not
-    const sorted = tracks.filter((post) => post.domain === 'youtube.com');
+const sortTracksFromReddit = (tracks) => {
+    const tracklist = tracks.filter((post) => post.domain === 'youtube.com');
 
-    let trackList = [];
+    let sorted = [];
 
-    sorted.map((track) => {
+    tracklist.map((track) => {
         let genre;
         let year;
 
@@ -156,13 +88,13 @@ function sorter(tracks) {
             genre
         };
 
-        trackList.push(object);
+        sorted.push(object);
     })
     
-    return getUniqueTracklist(50, trackList);
+    return randomTracklist(50, sorted);
 }
 
-function getUniqueTracklist(count, array) {
+const randomTracklist = (count, array) => {
     const tmp = array.slice(array);
     const tracks = [];
     
@@ -174,9 +106,7 @@ function getUniqueTracklist(count, array) {
     return tracks;
 }
 
-
-//SPOTIFY
-function searchSpotify(tracks, access_token) {
+const searchSpotify = (tracks, access_token) => {
     const promises = tracks.map((track) => {
         return new Promise(async (resolve, reject) => {
             const options = {
@@ -193,11 +123,15 @@ function searchSpotify(tracks, access_token) {
                 json: true
             };
 
-            const parsedTrack = await request(options);
-            if (parsedTrack.tracks.items[0] !== undefined && parsedTrack.tracks.items[0]) {
-                resolve(parsedTrack.tracks.items[0].uri);
-            } else {
-                resolve(parsedTrack.tracks.items[0]);
+            try {
+                const parsedTrack = await request(options);
+                if (parsedTrack.tracks.items[0] !== undefined && parsedTrack.tracks.items[0]) {
+                    resolve(parsedTrack.tracks.items[0].uri);
+                } else {
+                    resolve(parsedTrack.tracks.items[0]);
+                }
+            } catch(err) {
+                reject(err);
             }
         })
     })
@@ -205,13 +139,13 @@ function searchSpotify(tracks, access_token) {
     return Promise.all(promises)
         .then((result) => {
             const uris = result.filter(uri => uri);
-            return getUniqueTracklist(10, uris);
+            return randomTracklist(10, uris);
         }).catch((err) => {
-            console.log(err);
+            throw new Error(err);
         })
 }
 
-async function createPlaylist(user_id, access_token) {
+const createPlaylist = async (user_id, access_token) => {
     const options = {
         url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/',
         body: {
@@ -231,11 +165,11 @@ async function createPlaylist(user_id, access_token) {
         await request(options);
         console.log('created spotify playlist')
     } catch(err) {
-        console.log('err')
+        throw new Error(err);
     }
 }
 
-async function getPlaylist(access_token) {
+const getPlaylists = async (access_token) => {
     const options = {
         url: 'https://api.spotify.com/v1/me/playlists',
         headers: {
@@ -250,11 +184,11 @@ async function getPlaylist(access_token) {
         const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud');
         return appPlaylist;
     } catch(err) {
-        console.log('err i getplaylist()');
+        throw new Error(err);
     }
 }
 
-async function replaceTracksPlaylist(playlist_id, user_id, access_token, tracks) {
+const replaceTracksPlaylist = async (playlist_id, user_id, access_token, tracks) => {
     const options = {
         url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/' + playlist_id + '/tracks',
         body: {
@@ -270,11 +204,23 @@ async function replaceTracksPlaylist(playlist_id, user_id, access_token, tracks)
 
     try {
         await request(options);
-        console.log('successfully replaced tracks to playlist! =)')
-        return {status: 201};
+        console.log('successfully added tracks to playlist! =)');
+        return {
+            status: 201
+        };
     } catch(err) {
-        console.log(err);
+        throw new Error(err);
     }
 }
 
-module.exports = router;
+module.exports = {
+    getAccessToken,
+    removeExistingAccessToken,
+    getTracksFromReddit,
+    sortTracksFromReddit,
+    randomTracklist,
+    searchSpotify,
+    createPlaylist,
+    getPlaylists,
+    replaceTracksPlaylist
+}

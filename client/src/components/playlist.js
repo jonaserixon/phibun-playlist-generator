@@ -9,30 +9,18 @@ class Playlist extends Component {
         super(props);
 
         this.state = {
-            isLoading: true,
-            playlists: []
+            creatingPlaylist: false,
+            playlistCompleted: false,
+            flashMessage: '',
         };
 
         this.handleOnClick = this.handleOnClick.bind(this);
-
-        this.test = this.test.bind(this);
-    }
-
-    async test(event) {
-        event.preventDefault();
-        // const genre = event.target.elements.genre.value;
-        
-        const data = { 
-            access_token: localStorage.getItem('access_token'),
-            // user_id: this.props.username
-        };
-
-        const response = await fetch('/api/spotify/get-playlists', requestOptions(data, 'POST'));
-        const json = await response.json();
-        console.log(json);
     }
 
     async handleOnClick(event) {
+        this.setState({creatingPlaylist: true});
+        this.setState({playlistCompleted: false});
+        this.setState({flashMessage: ''});
         event.preventDefault();
         // const genre = event.target.elements.genre.value;
         
@@ -43,26 +31,35 @@ class Playlist extends Component {
 
         const response = await fetch('/api/reddit/phicloud-playlist', requestOptions(data, 'POST'));
         const json = await response.json();
-        console.log(json);
-    }
 
-    componentWillMount() {
-        this.setState({isLoading: true});
-    }
-
-    componentDidMount() {
-        if (Object.keys(this.state.playlists).length === 0 && this.state.playlists.constructor === Object) {
-            this.setState({isLoading: true});
+        if (response.status == 401) {
+            this.setState({flashMessage: 'Error, please try again'});
         } else {
-            this.setState({isLoading: false});
+            this.setState({creatingPlaylist: false});
+            this.setState({playlistCompleted: true});
         }
+        
+        console.log(json);
     }
     
     render() {
+        let toRender = 'Create Playlist!';
+
+        if (this.state.creatingPlaylist) {
+            toRender = <p>Creating playlist...</p>
+        }
+
+        if (this.state.playlistCompleted) {
+            toRender = <p>Playlist created</p>
+        }
+
+        if (this.state.flashMessage.length > 1) {
+            toRender = <p>{this.state.flashMessage}</p>
+        }
+
         return (
             <div className="Playlist">
                 <h2>Playlist page</h2>
-                <Button bsStyle={"primary"} onClick={this.test}>Get Playlists</Button>
                 <Form horizontal onSubmit={this.handleOnClick}>
                     <FormGroup>
                         <Col componentClass={ControlLabel} sm={2}>
@@ -75,7 +72,7 @@ class Playlist extends Component {
 
                     <FormGroup>
                         <Col smOffset={2} sm={10}>
-                            <Button bsStyle={"primary"} type="submit">Create Playlist!</Button>
+                            <Button bsStyle={"primary"} type="submit">{toRender}</Button>
                         </Col>
                     </FormGroup>
                 </Form>

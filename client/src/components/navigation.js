@@ -9,7 +9,7 @@ import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 
 import Playlist from './playlist';
 
-class Dashboard extends Component {
+class Navigation extends Component {
     constructor(props) {
         super(props);
 
@@ -37,7 +37,7 @@ class Dashboard extends Component {
         console.log('Dashboard page')
         return (
             <Router>
-                <div className="Dashboard">
+                <div className="Navigation">
                     <Grid fluid style={{ paddingLeft: 20, paddingRight: 20 }}>
                         <Row>
                             <Col md={2}>
@@ -94,12 +94,6 @@ class Dashboard extends Component {
                             </Col>
                             <Col md={9}>
                                 <div className="content-container">
-                                    {/* <Row>
-                                        <Col md={12}>
-                                            <p>inuti content containern</p>
-                                        </Col>
-                                    </Row> */}
-                                
                                     <Switch>
                                         <Route exact path='/playlist' component={() => <Playlist username={this.state.username}/>} />
                                     </Switch>
@@ -113,4 +107,4 @@ class Dashboard extends Component {
     }
 }
 
-export default Dashboard;
+export default Navigation;

@@ -7,7 +7,7 @@ import { Router } from 'react-router-dom';
 
 import {requestOptions} from './helpers/requestOptions';
 import Login from './components/login';
-import Dashboard from './components/dashboard';
+import Navigation from './components/navigation';
 
 class App extends Component {
     constructor(props) {
@@ -46,7 +46,7 @@ class App extends Component {
                 <div className="App">
                     <p>PhiCloud Client!</p>
                     {this.state.isLoggedIn ? (
-                        <Dashboard callback={this.callbackLogin}/>
+                        <Navigation callback={this.callbackLogin}/>
                     ) : (
                         <Login callback={this.callbackLogin}/>
                     )}
