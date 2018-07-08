@@ -27,8 +27,7 @@ class App extends Component {
     async componentDidUpdate() {
         if (localStorage.getItem('access_token')) {
             const token = { access_token: localStorage.getItem('access_token')};
-            
-            let response = await fetch('/api/spotify/user-info', requestOptions(token, 'POST'));
+            const response = await fetch('/api/user-info', requestOptions(token, 'POST'));
             
             if (response.status === 401) {
                 localStorage.removeItem('access_token');
@@ -39,8 +38,6 @@ class App extends Component {
     }
     
     render() {
-        console.log('app page')
-
         return (
             <Router history={history}>
                 <div className="App">

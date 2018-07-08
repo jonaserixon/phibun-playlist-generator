@@ -13,21 +13,16 @@ const auth_string = 'https://accounts.spotify.com/authorize?response_type=code&c
 class Login extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-
-        };
     }
 
     async componentWillMount() {
         if (history.location.pathname === '/callback') {
             const params = (new URL(document.location)).searchParams;
             const callbackCode = { code: params.get('code') };
-            let response = await fetch('/api/spotify/login', requestOptions(callbackCode, 'POST'));
-            let json = await response.json();
+            const response = await fetch('/api/auth', requestOptions(callbackCode, 'POST'));
+            const json = await response.json();
             localStorage.setItem('access_token', json.access_token);
             localStorage.setItem('refresh_token', json.refresh_token);
-            console.log('En ny liten token har sparats i localStorage =)');
         }
 
         if (localStorage.getItem('access_token')) {
@@ -39,7 +34,6 @@ class Login extends Component {
     }
     
     render() {
-        console.log('login page')
         return (
             <div className="Login">
                 <div>

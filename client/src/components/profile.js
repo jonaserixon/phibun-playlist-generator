@@ -30,8 +30,8 @@ class Profile extends Component {
     async getUserInfo() {
         const token = { access_token: localStorage.getItem('access_token')};
 
-        let response = await fetch('/api/spotify/user-info', requestOptions(token, 'POST'));
-        let json = await response.json();
+        const response = await fetch('/api/user', requestOptions(token, 'POST'));
+        const json = await response.json();
 
         this.setState({userInfo: json});
         this.setState({isLoading: false});

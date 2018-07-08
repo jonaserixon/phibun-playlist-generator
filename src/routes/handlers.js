@@ -1,12 +1,44 @@
 const request = require('request-promise-native');
 
+const createRedditAccessToken = async (RedditModel) => {
+    const options = {
+        url: 'https://www.reddit.com/api/v1/access_token',
+        form: {
+            grant_type: 'client_credentials'
+        },
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + (new Buffer(process.env['REDDIT_ID'] + ':' + process.env['REDDIT_SECRET']).toString('base64')),
+            'User-Agent': process.env['REDDIT_USER_AGENT']
+        },
+        method: 'POST',
+        json: true
+    }
+
+    try {
+        const parsedBody = await request(options);
+        await removeExistingAccessToken(RedditModel);
+        const token = new RedditModel({access_token: parsedBody.access_token});
+        token.save((err) => {
+            if (!err) console.log('reddit token stored in db');
+        });
+
+        return parsedBody.access_token;
+    } catch(err) { 
+        throw new Error(err);
+    }
+}
+
 const getAccessToken = (RedditModel) => {
-    //Om den inte hittar en token så gör en request till /auth
     return (
         RedditModel.find({})
         .exec()
-        .then((token) => {
-            return token[0].access_token;
+        .then(async (token) => {
+            if (token[0] === undefined) {
+                return await createRedditAccessToken(RedditModel);
+            } else {
+                return token[0].access_token;
+            }
         }).catch((err) => {
             throw new Error(err);
         })
@@ -19,6 +51,7 @@ const removeExistingAccessToken = (RedditModel) => {
         .exec()
         .then((token) => {
             if (token.length > 0) token[0].remove();
+            console.log('removed reddit token from db')
         }).catch((err) => {
             throw new Error(err);
         })
@@ -91,7 +124,7 @@ const sortTracksFromReddit = (tracks) => {
         sorted.push(object);
     })
     
-    return randomTracklist(50, sorted);
+    return randomTracklist(30, sorted);
 }
 
 const randomTracklist = (count, array) => {
@@ -106,7 +139,7 @@ const randomTracklist = (count, array) => {
     return tracks;
 }
 
-const searchSpotify = (tracks, access_token) => {
+const searchSpotify = (tracks, access_token, count) => {
     const promises = tracks.map((track) => {
         return new Promise(async (resolve, reject) => {
             const options = {
@@ -139,17 +172,17 @@ const searchSpotify = (tracks, access_token) => {
     return Promise.all(promises)
         .then((result) => {
             const uris = result.filter(uri => uri);
-            return randomTracklist(10, uris);
+            return randomTracklist(count, uris);
         }).catch((err) => {
             throw new Error(err);
         })
 }
 
-const createPlaylist = async (user_id, access_token) => {
+const createPlaylist = async (user_id, access_token, name) => {
     const options = {
         url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/',
         body: {
-            name: 'PhiCloud',
+            name,
             public: false,
             description: 'A PhiCloud generated playlist!'
         },
@@ -162,33 +195,67 @@ const createPlaylist = async (user_id, access_token) => {
     };
 
     try {
-        await request(options);
-        console.log('created spotify playlist')
-    } catch(err) {
-        throw new Error(err);
-    }
-}
-
-const getPlaylists = async (access_token) => {
-    const options = {
-        url: 'https://api.spotify.com/v1/me/playlists',
-        headers: {
-            'Authorization': 'Bearer ' + access_token
-        },
-        method: 'GET',
-        json: true
-    };
-
-    try {
         const parsedBody = await request(options);
-        const appPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud');
-        return appPlaylist;
+        console.log(parsedBody.id);
+        console.log('created spotify playlist')
+        return parsedBody;
     } catch(err) {
         throw new Error(err);
     }
 }
 
-const replaceTracksPlaylist = async (playlist_id, user_id, access_token, tracks) => {
+const savePlaylistinDB = (UserModel, playlist_id, user_id) => {
+    return UserModel.findOne({user_id})
+        .exec()
+        .then((user) => {
+            console.log(user);
+            if (user.playlists.includes(playlist_id)) {
+                console.log('User already has stored this playlist in the DB');
+            } else {
+                user.playlists.push(playlist_id);
+                user.save((err, result) => {
+                    if (!err) console.log('Playlist (' + playlist_id + ') successfully saved in ' + user_id + '\' playlist library!');
+                })
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+}
+
+const getPlaylists = async (access_token, user_id, playlists) => {
+    const promises = playlists.map((playlist) => {
+        
+        return new Promise(async (resolve, reject) => {
+            const options = {
+                url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/' + playlist,
+                headers: {
+                    'Authorization': 'Bearer ' + access_token
+                },
+                method: 'GET',
+                json: true
+            };
+            
+            try {
+                const parsedPlaylist = await request(options);
+                resolve(parsedPlaylist);
+            } catch(err) {
+                reject(err);
+            }
+        })
+    })
+
+    return Promise.all(promises)
+        .then((result) => {
+            console.log(result);
+            return result;
+        }).catch((err) => {
+            throw new Error(err);
+        })
+
+}
+
+const addTracksToPlaylist = async (playlist_id, user_id, access_token, tracks) => {
     const options = {
         url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/' + playlist_id + '/tracks',
         body: {
@@ -198,7 +265,7 @@ const replaceTracksPlaylist = async (playlist_id, user_id, access_token, tracks)
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + access_token
         },
-        method: 'PUT',
+        method: 'POST',
         json: true
     };
 
@@ -222,5 +289,7 @@ module.exports = {
     searchSpotify,
     createPlaylist,
     getPlaylists,
-    replaceTracksPlaylist
+    addTracksToPlaylist,
+    createRedditAccessToken,
+    savePlaylistinDB
 }

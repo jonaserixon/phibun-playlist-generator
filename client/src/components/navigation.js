@@ -8,6 +8,7 @@ import Profile from './profile';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 
 import Playlist from './playlist';
+import Library from './library';
 
 class Navigation extends Component {
     constructor(props) {
@@ -25,12 +26,11 @@ class Navigation extends Component {
         event.preventDefault();
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        this.props.callback(false); //Telling App.js that a user has logged out
+        this.props.callback(false);
     }
 
     setUsername(username) {
         this.setState({username: username});
-        console.log(this.state.username);
     }
     
     render() {
@@ -59,18 +59,11 @@ class Navigation extends Component {
                                                         Home
                                                     </ListGroupItem>
                                                 </Link>
-                                                
-                                                <Link to="/discover">
-                                                    <ListGroupItem>
-                                                        <Glyphicon glyph={"glyphicon glyphicon-music"} className="dashboard-icon"/>
-                                                        Discover music
-                                                    </ListGroupItem>
-                                                </Link>
 
                                                 <Link to="/playlist">
                                                     <ListGroupItem>
                                                         <Glyphicon glyph={"glyphicon glyphicon-tasks"} className="dashboard-icon"/>
-                                                        Playlist
+                                                        Generate Playlist
                                                     </ListGroupItem>
                                                 </Link>
 
@@ -96,6 +89,7 @@ class Navigation extends Component {
                                 <div className="content-container">
                                     <Switch>
                                         <Route exact path='/playlist' component={() => <Playlist username={this.state.username}/>} />
+                                        <Route exact path='/library' component={() => <Library username={this.state.username}/>} />
                                     </Switch>
                                 </div>
                             </Col>

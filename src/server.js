@@ -10,8 +10,7 @@ const start = () => {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(cors());
 
-    app.use('/api/spotify', require('./routes/spotify'));
-    app.use('/api/reddit', require('./routes/reddit'));
+    app.use('/api/', require('./routes/routes'));
 
     app.listen(process.env['SERVER_PORT'], () => {
         console.log('Express listening on port ' + process.env['SERVER_PORT'])
