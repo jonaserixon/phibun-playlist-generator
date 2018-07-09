@@ -2,11 +2,15 @@
 ::-moz-selection { background:#ff70cd; color: black;}
 
 html {
-    background-color: lightgray;
+    background-color: white;
 }
 
 .App {
     height: 100vh;
+}
+
+.Login {
+    margin-top: 10vh;
 }
 
 .dashboard-container {

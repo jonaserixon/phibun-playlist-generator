@@ -7,7 +7,7 @@ import Profile from './profile';
 
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 
-import Playlist from './playlist';
+import Generator from './generator';
 import Library from './library';
 
 class Navigation extends Component {
@@ -34,7 +34,6 @@ class Navigation extends Component {
     }
     
     render() {
-        console.log('Dashboard page')
         return (
             <Router>
                 <div className="Navigation">
@@ -42,9 +41,9 @@ class Navigation extends Component {
                         <Row>
                             <Col md={2}>
                                 <div className="dashboard-container">
-                                    <Row>
+                                    <Row className="text-center">
                                         <Col md={12}>
-                                            <p>Dashboard</p>
+                                            <h5>PhiCloud</h5>
                                         </Col>
                                     </Row>
 
@@ -60,7 +59,7 @@ class Navigation extends Component {
                                                     </ListGroupItem>
                                                 </Link>
 
-                                                <Link to="/playlist">
+                                                <Link to="/generate">
                                                     <ListGroupItem>
                                                         <Glyphicon glyph={"glyphicon glyphicon-tasks"} className="dashboard-icon"/>
                                                         Generate Playlist
@@ -88,7 +87,7 @@ class Navigation extends Component {
                             <Col md={9}>
                                 <div className="content-container">
                                     <Switch>
-                                        <Route exact path='/playlist' component={() => <Playlist username={this.state.username}/>} />
+                                        <Route exact path='/generate' component={() => <Generator username={this.state.username}/>} />
                                         <Route exact path='/library' component={() => <Library username={this.state.username}/>} />
                                     </Switch>
                                 </div>

@@ -12,7 +12,6 @@ class Profile extends Component {
             userInfo: {},
             isLoading: true,
         };
-
     }
 
     componentWillMount() {
@@ -36,7 +35,6 @@ class Profile extends Component {
         this.setState({userInfo: json});
         this.setState({isLoading: false});
         this.props.usernameCallback(this.state.userInfo.id);
-        console.log(this.state.userInfo);
     }
 
     contentToRender() {

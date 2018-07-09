@@ -15,7 +15,8 @@ const {
     getPlaylists,
     addTracksToPlaylist,
     createRedditAccessToken,
-    savePlaylistinDB
+    savePlaylistinDB,
+    millisToMinutesAndSeconds
     } = require('./handlers');
 
 
@@ -52,7 +53,7 @@ router.post('/refresh-token', async (req, res) => {
     //refresh token request
 });
 
-//Stores new users in database
+//Get user info and stores new user in database
 router.post('/user', async (req, res) => {
     const options = {
         url: baseUrl + 'me',
@@ -89,56 +90,6 @@ router.post('/user', async (req, res) => {
     }
 });
 
-router.post('/playlists', async (req, res) => {
-    const options = {
-        url: baseUrl + 'me/playlists',
-        headers: {
-            'Authorization': 'Bearer ' + req.body.access_token
-        },
-        method: 'GET',
-        json: true
-    };
-
-    try {
-        const parsedBody = await request(options);
-        const phiPlaylist = parsedBody.items.filter((playlist) => playlist.name === 'PhiCloud');
-        
-        const options2 = {
-            url: phiPlaylist[0].tracks.href,
-            headers: {
-                'Authorization': 'Bearer ' + req.body.access_token
-            },
-            method: 'GET',
-            json: true
-        };
-
-        const parsedPlaylist = await request(options2);
-
-        let tracklist = parsedPlaylist.items.map((track) => {
-            let object = {
-                artist: track.track.artists[0].name,
-                title: track.track.name,
-                album_name: track.track.album.name,
-                album_art: track.track.album.images[0].url,            
-                duration: millisToMinutesAndSeconds(track.track.duration_ms),
-                uri: track.track.uri,
-            }
-
-            return object;
-        })
-
-        res.status(200).json({playlist: phiPlaylist, tracklist: tracklist});
-    } catch(error) {
-        res.status(401).json(error) 
-    }
-});
-
-millisToMinutesAndSeconds = (millis) => {
-    let minutes = Math.floor(millis / 60000);
-    let seconds = ((millis % 60000) / 1000).toFixed(0);
-    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
-}
-
 //COMMON
 router.post('/generate-playlist', async (req, res) => {
     const access_token = req.body.access_token;
@@ -158,7 +109,6 @@ router.post('/generate-playlist', async (req, res) => {
         res.status(401).json(err);
     }
 });
-
 
 router.post('/replace-track', async (req, res) => {
     const access_token = req.body.access_token;
@@ -183,11 +133,47 @@ router.post('/library-playlists', (req, res) => {
             //gör en massa requests till spotify apiet med playlist id från user.playlists
             //kolla ifall spellsitorna fortfarande existerar eller inte och isåfalls ta bort från dbn
             const userPlaylists = await getPlaylists(access_token, user_id, user.playlists);
+            console.log(userPlaylists);
             res.status(200).json(userPlaylists);
         })
         .catch((err) => {
             res.status(400).json(err);
         });
 });
+
+router.post('/playlist-tracks', async (req, res) => {
+    const access_token = req.body.access_token;
+    const url = req.body.url;
+
+    const options = {
+        url,
+        headers: {
+            'Authorization': 'Bearer ' + access_token
+        },
+        method: 'GET',
+        json: true
+    };
+
+    try {
+        const parsedBody = await request(options);
+
+        let tracklist = parsedBody.items.map((track) => {
+            return {
+                artist: track.track.artists[0].name,
+                title: track.track.name,
+                album_name: track.track.album.name,
+                album_art: track.track.album.images[0].url,            
+                duration: millisToMinutesAndSeconds(track.track.duration_ms),
+                uri: track.track.uri,
+            }
+        });
+
+        console.log(tracklist);
+        res.status(200).json(tracklist);
+    } catch(err) {
+        res.status(401).json(err);
+    }
+});
+
 
 module.exports = router;

@@ -224,35 +224,31 @@ const savePlaylistinDB = (UserModel, playlist_id, user_id) => {
 }
 
 const getPlaylists = async (access_token, user_id, playlists) => {
-    const promises = playlists.map((playlist) => {
-        
-        return new Promise(async (resolve, reject) => {
-            const options = {
-                url: 'https://api.spotify.com/v1/users/' + user_id + '/playlists/' + playlist,
-                headers: {
-                    'Authorization': 'Bearer ' + access_token
-                },
-                method: 'GET',
-                json: true
-            };
-            
-            try {
-                const parsedPlaylist = await request(options);
-                resolve(parsedPlaylist);
-            } catch(err) {
-                reject(err);
-            }
-        })
-    })
+    const options = {
+        url: 'https://api.spotify.com/v1/me/playlists',
+        headers: {
+            'Authorization': 'Bearer ' + access_token
+        },
+        method: 'GET',
+        json: true
+    };
+    
+    try {
+        const parsedPlaylists = await request(options);
+        let playlistsOwnedByUser = parsedPlaylists.items.filter((playlist) => playlist.owner.id === user_id);
 
-    return Promise.all(promises)
-        .then((result) => {
-            console.log(result);
-            return result;
-        }).catch((err) => {
-            throw new Error(err);
+        let existingPlaylists = [];
+
+        playlistsOwnedByUser.map((x) => {
+            playlists.map((y) => {
+                if (x.id === y) existingPlaylists.push(x);
+            })
         })
 
+        return existingPlaylists;
+    } catch(err) {
+        throw new Error(err);
+    }
 }
 
 const addTracksToPlaylist = async (playlist_id, user_id, access_token, tracks) => {
@@ -280,6 +276,12 @@ const addTracksToPlaylist = async (playlist_id, user_id, access_token, tracks) =
     }
 }
 
+const millisToMinutesAndSeconds = (millis) => {
+    let minutes = Math.floor(millis / 60000);
+    let seconds = ((millis % 60000) / 1000).toFixed(0);
+    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+}
+
 module.exports = {
     getAccessToken,
     removeExistingAccessToken,
@@ -291,5 +293,6 @@ module.exports = {
     getPlaylists,
     addTracksToPlaylist,
     createRedditAccessToken,
-    savePlaylistinDB
+    savePlaylistinDB,
+    millisToMinutesAndSeconds
 }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import history from '../history';
-import {Grid, Row, Col, Button} from 'react-bootstrap';
+import {Grid, Row, Col, Button, Panel} from 'react-bootstrap';
 
 import {requestOptions} from '../helpers/requestOptions';
 
@@ -27,22 +27,41 @@ class Login extends Component {
 
         if (localStorage.getItem('access_token')) {
             history.push('/'); 
-            this.props.callback(true);  //set state in parent component
+            this.props.callback(true);
         } else {
-            this.props.callback(false); //set state in parent component
+            this.props.callback(false);
         }
     }
     
     render() {
         return (
             <div className="Login">
-                <div>
-                    <a href={auth_string}>
-                        <Button bsStyle="success">
-                            Login with your Spotify Account!
-                        </Button>
-                    </a>
-                </div>
+                <Grid>
+                <Panel>
+                    <Row className="text-center">
+                        <Col md={12}>
+                            <h2>PhiCloud - Spotify Playlist Generator!</h2>
+                        </Col>
+                    </Row>
+                    <Row className="text-center">
+                        <Col md={6} mdOffset={3}>
+                                <a href={auth_string}>
+                                    <Button bsStyle="success">
+                                        Login with your Spotify Account!
+                                    </Button>
+                                </a>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <br/>
+                    </Row>
+                </Panel>
+                    <Row className="text-center">
+                        <Col md={6} mdOffset={3}>
+                            <p>Made by Jonas Erixon 2018</p>
+                        </Col>
+                    </Row>
+                </Grid>
             </div>
         );
     }

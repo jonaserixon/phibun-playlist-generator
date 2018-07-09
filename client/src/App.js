@@ -27,7 +27,7 @@ class App extends Component {
     async componentDidUpdate() {
         if (localStorage.getItem('access_token')) {
             const token = { access_token: localStorage.getItem('access_token')};
-            const response = await fetch('/api/user-info', requestOptions(token, 'POST'));
+            const response = await fetch('/api/user', requestOptions(token, 'POST'));
             
             if (response.status === 401) {
                 localStorage.removeItem('access_token');
@@ -36,12 +36,11 @@ class App extends Component {
             }
         }
     }
-    
+
     render() {
         return (
             <Router history={history}>
                 <div className="App">
-                    <p>PhiCloud Client!</p>
                     {this.state.isLoggedIn ? (
                         <Navigation callback={this.callbackLogin}/>
                     ) : (
