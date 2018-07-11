@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
 import history from './history';
-import {Grid, Row, Col, Button} from 'react-bootstrap';
-// import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import { Router } from 'react-router-dom';
 
 import {requestOptions} from './helpers/requestOptions';

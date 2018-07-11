@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import history from '../history';
-import {Grid, Row, Col, Button, Panel, Image} from 'react-bootstrap';
+import {Row, Col, Panel, Image} from 'react-bootstrap';
 
 import {requestOptions} from '../helpers/requestOptions';
 

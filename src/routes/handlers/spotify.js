@@ -1,15 +1,16 @@
 const request = require('request-promise-native');
+const {randomTracklist, millisToMinutesAndSeconds} = require('../utils/utils');
 
-const createRedditAccessToken = async (RedditModel) => {
+const auth = async (code) => {
     const options = {
-        url: 'https://www.reddit.com/api/v1/access_token',
+        url: 'https://accounts.spotify.com/api/token',
         form: {
-            grant_type: 'client_credentials'
+            code,
+            redirect_uri: 'http://localhost:3000/callback',
+            grant_type: "authorization_code"
         },
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Basic ' + (new Buffer(process.env['REDDIT_ID'] + ':' + process.env['REDDIT_SECRET']).toString('base64')),
-            'User-Agent': process.env['REDDIT_USER_AGENT']
+            'Authorization': 'Basic ' + (new Buffer(process.env['SPOTIFY_ID'] + ':' + process.env['SPOTIFY_SECRET']).toString('base64'))
         },
         method: 'POST',
         json: true
@@ -17,126 +18,15 @@ const createRedditAccessToken = async (RedditModel) => {
 
     try {
         const parsedBody = await request(options);
-        await removeExistingAccessToken(RedditModel);
-        const token = new RedditModel({access_token: parsedBody.access_token});
-        token.save((err) => {
-            if (!err) console.log('reddit token stored in db');
-        });
+        const access_token = parsedBody.access_token;
+        const refresh_token = parsedBody.refresh_token;
 
-        return parsedBody.access_token;
-    } catch(err) { 
-        throw new Error(err);
-    }
-}
-
-const getAccessToken = (RedditModel) => {
-    return (
-        RedditModel.find({})
-        .exec()
-        .then(async (token) => {
-            if (token[0] === undefined) {
-                return await createRedditAccessToken(RedditModel);
-            } else {
-                return token[0].access_token;
-            }
-        }).catch((err) => {
-            throw new Error(err);
-        })
-    )
-}
-
-const removeExistingAccessToken = (RedditModel) => {
-    return (
-        RedditModel.find({})
-        .exec()
-        .then((token) => {
-            if (token.length > 0) token[0].remove();
-            console.log('removed reddit token from db')
-        }).catch((err) => {
-            throw new Error(err);
-        })
-    )
-}
-
-const createOptions = (access_token, url) => {
-    const options = {
-        url: 'https://oauth.reddit.com/' + url,
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': 'Bearer ' + access_token,
-            'User-Agent': process.env['REDDIT_USER_AGENT']
-        },
-        method: 'GET',
-        json: true
-    }
-
-    return options;
-}
-
-const getTracksFromReddit = async (access_token) => {
-    try {
-        return new Promise(async resolve => {
-            const listentothis = await request(createOptions(access_token, 'r/listentothis/top?t=day&limit=100'));
-            const music = await request(createOptions(access_token, 'r/music/top?t=day&limit=100'));
-
-            let tracks = [];
-
-            listentothis.data.children.map((track) => {
-                tracks.push(track.data);
-            })
-
-            music.data.children.map((track) => {
-                tracks.push(track.data);
-            })
-            
-            resolve(tracks);
-            return tracks;
-        })
+        return {access_token, refresh_token};
+        // res.status(200).json({ message: 'Auth successful', access_token, refresh_token });
     } catch(err) {
         throw new Error(err);
+        // res.status(400).json({ message: 'Bad auth' });
     }
-}
-
-const sortTracksFromReddit = (tracks) => {
-    const tracklist = tracks.filter((post) => post.domain === 'youtube.com');
-
-    let sorted = [];
-
-    tracklist.map((track) => {
-        let genre;
-        let year;
-
-        if (track.title.match(/\[(.*?)\]/)) {
-            genre = track.title.match(/\[(.*?)\]/)[1];
-        }
-
-        if (track.title.match(/\(([^)]+)\)/)) {
-            year = track.title.match(/\(([^)]+)\)/)[1];
-            if (!/\d/.test(year)) year = null;
-        }        
-        
-        const object = {
-            title: track.title.substring(0, track.title.indexOf('[')),
-            year,
-            genre
-        };
-
-        sorted.push(object);
-    })
-    
-    return randomTracklist(30, sorted);
-}
-
-const randomTracklist = (count, array) => {
-    const tmp = array.slice(array);
-    const tracks = [];
-    
-    for (let i = 0; i < count; i++) {
-        const index = Math.floor(Math.random() * tmp.length);
-        const removed = tmp.splice(index, 1);
-        tracks.push(removed[0]);
-    }
-    return tracks;
 }
 
 const searchSpotify = (tracks, access_token, count) => {
@@ -276,23 +166,11 @@ const addTracksToPlaylist = async (playlist_id, user_id, access_token, tracks) =
     }
 }
 
-const millisToMinutesAndSeconds = (millis) => {
-    let minutes = Math.floor(millis / 60000);
-    let seconds = ((millis % 60000) / 1000).toFixed(0);
-    return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
-}
-
 module.exports = {
-    getAccessToken,
-    removeExistingAccessToken,
-    getTracksFromReddit,
-    sortTracksFromReddit,
-    randomTracklist,
+    auth,
     searchSpotify,
     createPlaylist,
     getPlaylists,
     addTracksToPlaylist,
-    createRedditAccessToken,
-    savePlaylistinDB,
-    millisToMinutesAndSeconds
+    savePlaylistinDB
 }

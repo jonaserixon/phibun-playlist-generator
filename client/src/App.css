@@ -13,6 +13,10 @@ html {
     margin-top: 10vh;
 }
 
+.Playlist {
+    width: 600px;
+}
+
 .dashboard-container {
     background-color: ghostwhite;
     padding: 10px;

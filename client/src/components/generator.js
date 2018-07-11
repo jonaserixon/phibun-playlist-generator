@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import history from '../history';
-import {Grid, Row, Col, Button, Image, Form, FormGroup, FormControl, ControlLabel, Breadcrumb, Panel, PanelGroup} from 'react-bootstrap';
+import {Grid, Row, Col, Button, Form, FormGroup, FormControl, ControlLabel} from 'react-bootstrap';
 
 import {requestOptions} from '../helpers/requestOptions';
 
@@ -38,7 +37,7 @@ class Generator extends Component {
         const response = await fetch('/api/generate-playlist', requestOptions(data, 'POST'));
         const json = await response.json();
 
-        if (response.status == 401) {
+        if (response.status === 401) {
             this.setState({flashMessage: 'Error, please try again'});
         } else if (response.status === 502) {
             this.handleOnClick();

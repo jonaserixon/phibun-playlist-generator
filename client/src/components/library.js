@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import {Grid, Row, Col, Button} from 'react-bootstrap';
 import {requestOptions} from '../helpers/requestOptions';
 import Playlist from './playlist';
 
@@ -9,7 +8,7 @@ class Library extends Component {
 
         this.state = {
             playlists: [],
-            list: []
+            list: [],
         };
     }
 
@@ -21,19 +20,19 @@ class Library extends Component {
 
         const response = await fetch('/api/library-playlists', requestOptions(data, 'POST'));
         const json = await response.json();
-        // console.log(json);
         this.setState({playlists: json});
         this.getSpotifyPlaylists();
     }
 
     getSpotifyPlaylists() {
         let lists = [];
-        this.state.playlists.map((playlist) => {
+        this.state.playlists.map((playlist, i) => 
             lists.push(
-                <Playlist name={playlist.name} totalTracks={playlist.tracks.total} tracks={playlist.tracks.href} externalUrl={playlist.external_urls.spotify}/>
-            );
-        })
+                <Playlist key={i} playlist_id={playlist.id} username={this.props.username} name={playlist.name} totalTracks={playlist.tracks.total} tracks={playlist.tracks.href} externalUrl={playlist.external_urls.spotify}/>
+            )
+        );
         this.setState({list: lists});
+        console.log(this.state.list);
     }
     
     render() {

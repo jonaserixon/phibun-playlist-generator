@@ -1,12 +1,9 @@
 import React, { Component } from 'react';
-import history from '../history';
-import {Grid, Row, Col, Button, ListGroup, ListGroupItem, Panel, Glyphicon} from 'react-bootstrap';
-
-import {requestOptions} from '../helpers/requestOptions';
-import Profile from './profile';
+import {Grid, Row, Col, ListGroup, ListGroupItem, Glyphicon} from 'react-bootstrap';
 
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 
+import Profile from './profile';
 import Generator from './generator';
 import Library from './library';
 
