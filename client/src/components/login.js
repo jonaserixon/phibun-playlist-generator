@@ -37,28 +37,28 @@ class Login extends Component {
         return (
             <div className="Login">
                 <Grid>
-                <Panel>
-                    <Row className="text-center">
-                        <Col md={12}>
-                            <h2>PhiCloud - Spotify Playlist Generator!</h2>
-                        </Col>
-                    </Row>
-                    <Row className="text-center">
-                        <Col md={6} mdOffset={3}>
+                    <Panel style={{backgroundColor: "lightgrey"}}>
+                        <Row className="text-center">
+                            <Col md={12}>
+                                <h2>PhiCloud - Spotify Playlist Generator!</h2>
+                            </Col>
+                        </Row>
+                        <Row className="text-center">
+                            <Col md={6} mdOffset={3}>
                                 <a href={auth_string}>
                                     <Button bsStyle="success">
                                         Login with your Spotify Account!
                                     </Button>
                                 </a>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <br/>
-                    </Row>
-                </Panel>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <br/>
+                        </Row>
+                    </Panel>
                     <Row className="text-center">
                         <Col md={6} mdOffset={3}>
-                            <p>Made by Jonas Erixon 2018</p>
+                            <p style={{color: "lightgrey"}}>Made by Jonas Erixon 2018</p>
                         </Col>
                     </Row>
                 </Grid>

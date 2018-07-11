@@ -5,10 +5,8 @@ const RedditModel = require('../models/RedditAuth').model('RedditAuth');
 const UserModel = require('../models/User').model('User'); 
 
 const {getAccessToken, getTracksFromReddit, sortTracksFromReddit} = require('./handlers/reddit');
-const {auth, searchSpotify, createPlaylist, getPlaylists, addTracksToPlaylist, savePlaylistinDB} = require('./handlers/spotify');
+const {auth, getUserInfo, searchSpotify, createPlaylist, getPlaylists, addTracksToPlaylist, savePlaylistinDB} = require('./handlers/spotify');
 const {millisToMinutesAndSeconds} = require('./utils/utils');
-
-const baseUrl = 'https://api.spotify.com/v1/';
 
 router.post('/auth', async (req, res) => {
     try {
@@ -28,53 +26,36 @@ router.post('/refresh-token', async (req, res) => {
 
 //Get user info and stores new user in database
 router.post('/user', async (req, res) => {
-    const options = {
-        url: baseUrl + 'me',
-        headers: {
-            'Authorization': 'Bearer ' + req.body.access_token
-        },
-        method: 'GET',
-        json: true
-    };
-
     try {
-        const parsedBody = await request(options);
+        const userData = await getUserInfo(req.body.access_token);
 
-        UserModel.findOne({user_id: parsedBody.id}, (err, result) => {
+        UserModel.findOne({user_id: userData.id}, (err, result) => {
             if (result == null) {
                 let user = new UserModel({
-                    user_id: parsedBody.id
+                    user_id: userData.id
                 });
                 user.save((err, result) => {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log('stored new user')
-                    }
+                    if (err) console.log(err);
                 })
             } else {
-                console.log(parsedBody.id + ' already exists!');
+                console.log(userData.id + ' already exists!');
             }
         })
 
-        res.status(200).json(parsedBody);
-    } catch(error) { 
-        res.status(401).json(error) 
+        res.status(200).json(userData);
+    } catch(err) { 
+        res.status(401).json(err) 
     }
 });
 
-//COMMON
 router.post('/generate-playlist', async (req, res) => {
-    const access_token = req.body.access_token;
-    const user_id = req.body.user_id;
-
     try {
         const tracks = await getTracksFromReddit(await getAccessToken(RedditModel));
         const sorted = sortTracksFromReddit(tracks);
-        const searchResult = await searchSpotify(sorted, access_token, 10);
-        const createdPlaylist = await createPlaylist(user_id, access_token, req.body.playlist_name);
-        await addTracksToPlaylist(createdPlaylist.id, user_id, access_token, searchResult);
-        await savePlaylistinDB(UserModel, createdPlaylist.id, user_id);
+        const searchResult = await searchSpotify(sorted, req.body.access_token, 10);
+        const createdPlaylist = await createPlaylist(req.body.user_id, req.body.access_token, req.body.playlist_name);
+        await addTracksToPlaylist(createdPlaylist.id, req.body.user_id, req.body.access_token, searchResult);
+        await savePlaylistinDB(UserModel, createdPlaylist.id, req.body.user_id);
 
         res.status(200).json({message: 'Successfully generated a Spotify playlist!'});
     } catch(err) {
@@ -84,15 +65,10 @@ router.post('/generate-playlist', async (req, res) => {
 });
 
 router.post('/generate-track', async (req, res) => {
-    //Generate a new set of tracks from reddit + spotify.
-    const access_token = req.body.access_token;
-    const user_id = req.body.user_id;
-
     try {
         const tracks = await getTracksFromReddit(await getAccessToken(RedditModel));
         const sorted = sortTracksFromReddit(tracks);
-        const searchResult = await searchSpotify(sorted, access_token, 10);
-
+        const searchResult = await searchSpotify(sorted, req.body.access_token, 10);
         res.status(200).json(searchResult);
     } catch(err) {
         console.log(err);
@@ -103,15 +79,15 @@ router.post('/generate-track', async (req, res) => {
 router.post('/replace-track', async (req, res) => {
     const options = {
         url: 'https://api.spotify.com/v1/users/' + req.body.user_id + '/playlists/' + req.body.playlist_id + '/tracks',
+        body: {
+            uris: req.body.tracks
+        },
         headers: {
             'Content-Type': 'application/json', 
-            'Accept': 'application/json',
             'Authorization': 'Bearer ' + req.body.access_token
         },
         method: 'PUT',
-        data: {
-            tracks: uri
-        },
+        json: true
     };
 
     console.log('___________________')
@@ -125,15 +101,10 @@ router.post('/replace-track', async (req, res) => {
 });
 
 router.post('/library-playlists', (req, res) => {
-    const access_token = req.body.access_token;
-    const user_id = req.body.user_id;
-
-    console.log(user_id);
-
-    return UserModel.findOne({user_id})
+    return UserModel.findOne({user_id: req.body.user_id})
         .exec()
         .then(async (user) => {
-            const userPlaylists = await getPlaylists(access_token, user_id, user.playlists);
+            const userPlaylists = await getPlaylists(req.body.access_token, req.body.user_id, user.playlists);
             res.status(200).json(userPlaylists);
         })
         .catch((err) => {

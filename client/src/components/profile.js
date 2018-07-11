@@ -14,23 +14,20 @@ class Profile extends Component {
     }
 
     componentWillMount() {
+        this.setState({isLoading: true});
         this.getUserInfo();
     }
 
-    componentDidMount() {
-        if (Object.keys(this.state.userInfo).length === 0 && this.state.userInfo.constructor === Object) {
-            this.setState({isLoading: true});
-        } else {
-            this.setState({isLoading: false});
-        }
+    componentDidUpdate() {
+        if (this.state.userInfo.external_urls === undefined) {
+            this.props.callback(false);
+        } 
     }
 
     async getUserInfo() {
         const token = { access_token: localStorage.getItem('access_token')};
-
         const response = await fetch('/api/user', requestOptions(token, 'POST'));
         const json = await response.json();
-
         this.setState({userInfo: json});
         this.setState({isLoading: false});
         this.props.usernameCallback(this.state.userInfo.id);

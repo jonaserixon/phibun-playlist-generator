@@ -44,18 +44,11 @@ class Navigation extends Component {
                                         </Col>
                                     </Row>
 
-                                    <Profile usernameCallback={this.setUsername}/>
+                                    <Profile usernameCallback={this.setUsername} callback={this.props.callback}/>
 
                                     <Row>
                                         <Col md={12}>
                                             <ListGroup>
-                                                <Link to="/">
-                                                    <ListGroupItem>
-                                                        <Glyphicon glyph={"glyphicon glyphicon-home"} className="dashboard-icon"/>
-                                                        Home
-                                                    </ListGroupItem>
-                                                </Link>
-
                                                 <Link to="/generate">
                                                     <ListGroupItem>
                                                         <Glyphicon glyph={"glyphicon glyphicon-tasks"} className="dashboard-icon"/>

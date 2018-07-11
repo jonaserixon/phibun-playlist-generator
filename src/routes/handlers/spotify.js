@@ -22,10 +22,26 @@ const auth = async (code) => {
         const refresh_token = parsedBody.refresh_token;
 
         return {access_token, refresh_token};
-        // res.status(200).json({ message: 'Auth successful', access_token, refresh_token });
     } catch(err) {
         throw new Error(err);
-        // res.status(400).json({ message: 'Bad auth' });
+    }
+}
+
+const getUserInfo = async (access_token) => {
+    const options = {
+        url: 'https://api.spotify.com/v1/me',
+        headers: {
+            'Authorization': 'Bearer ' + access_token
+        },
+        method: 'GET',
+        json: true
+    };
+
+    try {
+        const parsedBody = await request(options);
+        return parsedBody;
+    } catch(err) {
+        throw new Error(err);
     }
 }
 
@@ -168,6 +184,7 @@ const addTracksToPlaylist = async (playlist_id, user_id, access_token, tracks) =
 
 module.exports = {
     auth,
+    getUserInfo,
     searchSpotify,
     createPlaylist,
     getPlaylists,

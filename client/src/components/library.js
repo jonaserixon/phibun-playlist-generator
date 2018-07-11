@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import {Tabs, Tab} from 'react-bootstrap';
+
 import {requestOptions} from '../helpers/requestOptions';
 import Playlist from './playlist';
 
@@ -9,7 +11,14 @@ class Library extends Component {
         this.state = {
             playlists: [],
             list: [],
+            key: 1
         };
+
+        this.handleTabs = this.handleTabs.bind(this);
+    }
+
+    handleTabs(key) {
+        this.setState({ key });
     }
 
     async componentWillMount() {
@@ -28,19 +37,25 @@ class Library extends Component {
         let lists = [];
         this.state.playlists.map((playlist, i) => 
             lists.push(
-                <Playlist key={i} playlist_id={playlist.id} username={this.props.username} name={playlist.name} totalTracks={playlist.tracks.total} tracks={playlist.tracks.href} externalUrl={playlist.external_urls.spotify}/>
+                <Tab eventKey={i} title={playlist.name}>
+                    <Playlist key={i} playlist_id={playlist.id} username={this.props.username} name={playlist.name} totalTracks={playlist.tracks.total} tracks={playlist.tracks.href} externalUrl={playlist.external_urls.spotify}/>
+                </Tab>
             )
         );
         this.setState({list: lists});
-        console.log(this.state.list);
     }
     
     render() {
         return (
             <div className="Library">
                 <div>
-                    <h3>Your PhiCloud-Generated Playlists!</h3>
-                    {this.state.list}
+                    <Tabs
+                        activeKey={this.state.key}
+                        onSelect={this.handleTabs}
+                        id="tabs"
+                    >
+                        {this.state.list}
+                    </Tabs>
                 </div>
             </div>
         );

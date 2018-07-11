@@ -1,12 +1,24 @@
 ::selection { background:#ff70cd; color: black; }
 ::-moz-selection { background:#ff70cd; color: black;}
 
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
 html {
     background-color: white;
 }
 
 .App {
     height: 100vh;
+    background-color: #616060;
+    padding-top: 20px;
 }
 
 .Login {
@@ -14,14 +26,16 @@ html {
 }
 
 .Playlist {
-    width: 600px;
+    /* width: 600px; */
 }
 
 .dashboard-container {
-    background-color: ghostwhite;
+    background-color: #acacac;
     padding: 10px;
-    border: 1px solid grey;
+    border: 2px solid black;
     border-radius: 5px;
+    box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.6);
+    color: black;
 }
 
 .dashboard-container a {
@@ -30,13 +44,43 @@ html {
 }
 
 .content-container {
-    background-color: ghostwhite;
-    height: 80vh;
-    border: 1px solid lightgray;
+    background-color: #acacac;
+    height: 85vh;
+    width: 80vw;
+    border: 2px solid black;
     border-radius: 5px;
+    box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.6);
 }
 
 .dashboard-icon {
     margin-right: 5px;
     font-size: 13px;
+}
+
+.track {
+    border-radius: 5px;
+    background-color: inherit;
+    color: black;
+    transition: 0.1s;
+    margin-bottom: 1vw;
+    font-size: 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.track:hover {
+    background-color: #616060;
+    color: ghostwhite;
+    opacity: 1;
+}
+
+.replace-button {
+    cursor: grab;
+    font-size: 18px;
+    animation: spin 300ms;
+    transform: rotate(180deg);
+}
+
+.panel-tracklist {
+    
 }
