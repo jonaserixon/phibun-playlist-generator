@@ -14,13 +14,14 @@
 }
 
 html {
-    background-color: white;
+    background-color: #282828;
+    overflow-x: hidden;
 }
 
 .App {
-    height: 100vh;
-    background-color: #616060;
-    padding-top: 20px;
+    min-height: 100vh;
+    background-color: #282828;
+    /* padding-top: 20px; */
     font-family: "Open Sans", Impact;
 }
 
@@ -28,7 +29,21 @@ html {
     margin-top: 10vh;
 }
 
-.dashboard-container {
+.Profile {
+    float: right;
+    /* display: inline-block; */
+}
+
+.profile-content {
+    
+    /* float: right; */
+}
+
+.header {
+    background-color: #5a5a5a;
+}
+
+/* .dashboard-container {
     background-color: #acacac;
     padding: 10px;
     border: 2px solid black;
@@ -40,12 +55,12 @@ html {
 .dashboard-container a {
     text-decoration: none;
     color: black;
-}
+} */
 
 .content-container {
     background-color: #acacac;
-    height: 85vh;
-    width: 80vw;
+    min-height: 85vh;
+    width: 85vw;
     border: 2px solid black;
     border-radius: 5px;
     box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0.6);
@@ -81,12 +96,6 @@ html {
     transform: rotate(180deg);
 }
 
-.panel-tracklist {
-    border-bottom: 1px solid black;
-    background-color: ghostwhite;
-    margin-top: -20px;
-}
-
 .playlist-titles {
     background-color: #a5a5a5;
     color: black;
@@ -97,8 +106,12 @@ html {
     border-bottom: 1px solid slategray;
 }
 
-.library-footer {
+.playlist-footer {
     position: absolute;
     bottom: 0px;
     left: 0px;
+}
+
+.panel {
+    margin-bottom: 0px;
 }

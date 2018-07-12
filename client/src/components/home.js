@@ -22,11 +22,11 @@ class Playlist extends Component {
                     <Col md={6} >
                         <h3>Generate Playlists</h3>
                         <p>
-                            You can generate your own playlists by clicking on the <strong>Generate Playlist</strong> button in the sidebar.
+                            You can generate your own playlists by clicking on the <strong>Generate Playlist</strong> button in the navbar.
                         </p>
                         <h3>View created playlists and replace tracks</h3>
                         <p>
-                            After creating at least 1 playlist you will be able to view your generated playlists in the <strong>Your Library</strong> page. 
+                            After creating at least 1 playlist you will be able to view your generated playlists in the <strong>Your Playlists</strong> page. 
                             You can also replace individual tracks and with newly generated tracks.
                         </p>
                         

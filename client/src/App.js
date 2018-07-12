@@ -5,7 +5,7 @@ import { Router } from 'react-router-dom';
 
 import {requestOptions} from './helpers/requestOptions';
 import Login from './components/login';
-import Navigation from './components/navigation';
+import Content from './components/content';
 
 class App extends Component {
     constructor(props) {
@@ -18,8 +18,8 @@ class App extends Component {
         this.callbackLogin = this.callbackLogin.bind(this);
     }
 
-    callbackLogin(isUserLoggedIn) {
-        this.setState({isLoggedIn: isUserLoggedIn});
+    callbackLogin(isLoggedIn) {
+        this.setState({isLoggedIn});
     }
 
     async componentDidUpdate() {
@@ -40,7 +40,7 @@ class App extends Component {
             <Router history={history}>
                 <div className="App">
                     {this.state.isLoggedIn ? (
-                        <Navigation callback={this.callbackLogin}/>
+                        <Content callback={this.callbackLogin}/>
                     ) : (
                         <Login callback={this.callbackLogin}/>
                     )}

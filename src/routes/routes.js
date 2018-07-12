@@ -108,6 +108,7 @@ router.post('/library-playlists', (req, res) => {
             res.status(200).json(userPlaylists);
         })
         .catch((err) => {
+            console.log(err)
             res.status(400).json(err);
         });
 });

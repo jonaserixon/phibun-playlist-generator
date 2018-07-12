@@ -70,7 +70,7 @@ const searchSpotify = (tracks, access_token, count) => {
                     resolve(parsedTrack.tracks.items[0]);
                 }
             } catch(err) {
-                throw new Error(err);
+                reject(err);
             }
         })
     })
@@ -80,7 +80,7 @@ const searchSpotify = (tracks, access_token, count) => {
             const uris = result.filter(uri => uri);
             return randomTracklist(count, uris);
         }).catch((err) => {
-            // throw new Error(err);
+            throw new Error(err);
         })
 }
 
@@ -144,7 +144,6 @@ const getPlaylists = async (access_token, user_id, playlists) => {
         let playlistsOwnedByUser = parsedPlaylists.items.filter((playlist) => playlist.owner.id === user_id);
 
         let existingPlaylists = [];
-
         playlistsOwnedByUser.map((x) => {
             playlists.map((y) => {
                 if (x.id === y) existingPlaylists.push(x);

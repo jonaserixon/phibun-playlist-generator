@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Row, Col, Button, Panel, Glyphicon, Tooltip, OverlayTrigger, Alert} from 'react-bootstrap';
+import {Row, Col, Button, Panel, Glyphicon, Tooltip, OverlayTrigger, ListGroup, ListGroupItem} from 'react-bootstrap';
 import {requestOptions} from '../helpers/requestOptions';
 
 import FlashMessage from './flashMessage';
@@ -14,7 +14,8 @@ class Playlist extends Component {
             totalTime: '',
             showFlashMessage: false,
             flashType: '',
-            flashMessage: ''
+            flashMessage: '',
+            isGenerating: ''
         };
 
         this.generateNewTrack = this.generateNewTrack.bind(this);
@@ -45,6 +46,7 @@ class Playlist extends Component {
 
         this.state.reference.map((track, i) => 
             tracklist.push(
+                <ListGroupItem>
                 <Row className="track">
                     <Col md={3}>
                         <p><strong>{track.title}</strong></p>
@@ -66,6 +68,7 @@ class Playlist extends Component {
                     </OverlayTrigger>
                     </Col>
                 </Row>
+                </ListGroupItem>
             )
         );
         this.setState({tracklist});
@@ -80,9 +83,11 @@ class Playlist extends Component {
         this.setState({showFlashMessage: true});
     }
 
-    async generateNewTrack(event) {        
+    async generateNewTrack(event) { 
         let indexInTracklist = event.target.dataset.trackPosition;
         let trackToBeReplaced = this.state.reference[indexInTracklist].title
+
+        this.setState({isGenerating: 'Replacing ' + trackToBeReplaced + 'and generating a new track...'});       
 
         const generateTracks = await fetch('/api/generate-track', requestOptions({access_token: localStorage.getItem('access_token')}, 'POST'));
         const generatedTracks = await generateTracks.json();
@@ -105,11 +110,11 @@ class Playlist extends Component {
             this.setState({flashType: 'danger'});
             this.setState({flashMessage: 'You encountered an error. Please try again!'});
         } else {
+            this.setState({isGenerating: ''});       
             this.setState({showFlashMessage: true});
             this.setState({flashType: 'success'});
             this.setState({flashMessage: trackToBeReplaced + ' was successfully replaced with ' + this.state.reference[indexInTracklist].title + '!'});
-        }
-        
+        }    
     }
 
     getTotalPlayTime() {
@@ -151,32 +156,22 @@ class Playlist extends Component {
                             </Row>
                         </Panel.Title>
                     </Panel.Heading>
-                    <Row className="playlist-titles">
-                        <Col md={3}>
-                            <p>Title</p>
-                        </Col>
-                        <Col md={3}>
-                            <p>Artist</p>
-                        </Col>
-                        <Col md={3}> 
-                            <p>Album</p>
-                        </Col>
-                        <Col md={3}>
-                            <Glyphicon glyph="glyphicon glyphicon-time" />
-                        </Col>
-                    </Row>
                 </Panel>
-                
-                <div className="panel-tracklist">
-                        {this.state.tracklist}
-                    </div>
+                <ListGroup>
+                    {this.state.tracklist}
+                </ListGroup>
                 <Row>
                     {this.state.showFlashMessage ? (
                         <FlashMessage type={this.state.flashType} message={this.state.flashMessage} handleDismiss={this.handleDismiss}/>
                     ) : (
-                        <p className="library-footer">
-                            {this.props.totalTracks + ' songs, ' + this.state.totalPlaytime}
-                        </p>
+                        <div className="playlist-footer">
+                            <p>
+                                {this.state.isGenerating}
+                            </p>
+                            <p>
+                                {this.props.totalTracks + ' songs, ' + this.state.totalPlaytime}
+                            </p>
+                        </div>
                     )}
                 </Row>
             </div>

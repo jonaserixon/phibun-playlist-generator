@@ -11,7 +11,8 @@ class Library extends Component {
         this.state = {
             playlists: [],
             list: [],
-            key: 0
+            key: 0,
+            isLoading: true
         };
 
         this.handleTabs = this.handleTabs.bind(this);
@@ -29,6 +30,7 @@ class Library extends Component {
 
         const response = await fetch('/api/library-playlists', requestOptions(data, 'POST'));
         const json = await response.json();
+        console.log(json);
         this.setState({playlists: json});
         this.getSpotifyPlaylists();
     }
@@ -43,22 +45,31 @@ class Library extends Component {
             )
         );
         this.setState({list: lists});
+        this.setState({isLoading: false});
     }
     
     render() {
-        return (
-            <div className="Library">
-                <div>
-                    <Tabs
-                        activeKey={this.state.key}
-                        onSelect={this.handleTabs}
-                        id="tabs"
-                    >
-                        {this.state.list}
-                    </Tabs>
+        if (this.state.isLoading) {
+            return (
+                <div className="Library">
+                    <p>Loading playlists...</p>
                 </div>
-            </div>
-        );
+            )
+        } else {
+            return (
+                <div className="Library">
+                    <div>
+                        <Tabs
+                            activeKey={this.state.key}
+                            onSelect={this.handleTabs}
+                            id="tabs"
+                        >
+                            {this.state.list}
+                        </Tabs>
+                    </div>
+                </div>
+            );
+        }
     }
 }
 

@@ -32,38 +32,22 @@ class Profile extends Component {
         this.setState({isLoading: false});
         this.props.usernameCallback(this.state.userInfo.id);
     }
-
-    contentToRender() {
-        return (
-            <Row>
-                <Col md={12}>
-                    <Panel>
-                        <Row>
-                            <Col md={12}>
-                                <a href={this.state.userInfo.external_urls.spotify}>
-                                    <Image src={this.state.userInfo.images[0].url} width={"100%"} thumbnail/>
-                                </a>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md={12}>
-                                <Panel.Body>
-                                    Logged in as <strong>{this.state.userInfo.id}</strong>
-                                </Panel.Body>
-                            </Col>
-                        </Row>
-                    </Panel>
-                </Col>
-            </Row>
-        );
-    }
     
     render() {
         let renderThis;
         if (this.state.isLoading) {
-            renderThis = <p>Loading content, please wait...</p>
+            renderThis = <p>Loading photo, please wait...</p>
         } else {
-            renderThis = this.contentToRender();
+            renderThis = (
+                <Row>
+                <Col md={6}>
+                    <p style={{color: 'ghostwhite', fontSize: '12px'}}>Logged in as {this.state.userInfo.id}</p>
+                </Col>
+                <Col md={1}>
+                    <Image src={this.state.userInfo.images[0].url} width={"30px"} circle/>
+                </Col>
+                </Row>
+            )
         }
 
         return (
