@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import Profile from './profile';
 import Generator from './generator';
 import Library from './library';
+import Home from './home';
 
 class Navigation extends Component {
     constructor(props) {
@@ -40,7 +41,7 @@ class Navigation extends Component {
                                 <div className="dashboard-container">
                                     <Row className="text-center">
                                         <Col md={12}>
-                                            <h5>PhiCloud</h5>
+                                            <h5>Phibun Playlist Generator</h5>
                                         </Col>
                                     </Row>
 
@@ -79,6 +80,7 @@ class Navigation extends Component {
                                     <Switch>
                                         <Route exact path='/generate' component={() => <Generator username={this.state.username}/>} />
                                         <Route exact path='/library' component={() => <Library username={this.state.username}/>} />
+                                        <Route exact path='/' component={() => <Home />} />
                                     </Switch>
                                 </div>
                             </Col>

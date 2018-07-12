@@ -11,7 +11,7 @@ class Library extends Component {
         this.state = {
             playlists: [],
             list: [],
-            key: 1
+            key: 0
         };
 
         this.handleTabs = this.handleTabs.bind(this);

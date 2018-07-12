@@ -40,7 +40,7 @@ class Login extends Component {
                     <Panel style={{backgroundColor: "lightgrey"}}>
                         <Row className="text-center">
                             <Col md={12}>
-                                <h2>PhiCloud - Spotify Playlist Generator!</h2>
+                                <h2>Phibun - Spotify Playlist Generator!</h2>
                             </Col>
                         </Row>
                         <Row className="text-center">

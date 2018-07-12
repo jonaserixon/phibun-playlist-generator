@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import {Row, Col, Button, Panel, Badge, Glyphicon} from 'react-bootstrap';
+import {Row, Col, Button, Panel, Glyphicon, Tooltip, OverlayTrigger, Alert} from 'react-bootstrap';
 import {requestOptions} from '../helpers/requestOptions';
+
+import FlashMessage from './flashMessage';
 
 class Playlist extends Component {
     constructor(props) {
@@ -9,10 +11,15 @@ class Playlist extends Component {
         this.state = {
             tracklist: [],
             reference: [],  //helper list when making api calls with proper spotify data
-            generatedTracks: []
+            totalTime: '',
+            showFlashMessage: false,
+            flashType: '',
+            flashMessage: ''
         };
 
         this.generateNewTrack = this.generateNewTrack.bind(this);
+        this.handleDismiss = this.handleDismiss.bind(this);
+        this.handleShow = this.handleShow.bind(this);
     }
 
     componentDidMount() {
@@ -29,12 +36,13 @@ class Playlist extends Component {
         const json = await response.json();
         this.setState({reference: json}, () => {
             this.createTracklist();
+            return;
         })
     }
 
     createTracklist() {
         let tracklist = [];
-    
+
         this.state.reference.map((track, i) => 
             tracklist.push(
                 <Row className="track">
@@ -51,25 +59,35 @@ class Playlist extends Component {
                         <p>{track.duration}</p>
                     </Col>
                     <Col md={1}>
-                        <Glyphicon className="replace-button" glyph="glyphicon glyphicon-refresh" onClick={this.generateNewTrack} data-track-uri={track.uri} data-track-position={i} />
+                    <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Replace "<strong>{track.title}</strong>" by generating a new track!</Tooltip>}>
+                        <Button bsStyle="primary" bsSize="small" data-track-uri={track.uri} data-track-position={i} onClick={this.generateNewTrack}>
+                            <Glyphicon className="replace-button" glyph="glyphicon glyphicon-refresh" />
+                        </Button>
+                    </OverlayTrigger>
                     </Col>
                 </Row>
             )
         );
         this.setState({tracklist});
+        this.getTotalPlayTime();
+    }
+
+    handleDismiss() {
+        this.setState({showFlashMessage: false});
+    }
+
+    handleShow() {
+        this.setState({showFlashMessage: true});
     }
 
     async generateNewTrack(event) {        
         let indexInTracklist = event.target.dataset.trackPosition;
-        
-        const generateTracks = await fetch('/api/generate-track', requestOptions({access_token: localStorage.getItem('access_token')}, 'POST'))
+        let trackToBeReplaced = this.state.reference[indexInTracklist].title
+
+        const generateTracks = await fetch('/api/generate-track', requestOptions({access_token: localStorage.getItem('access_token')}, 'POST'));
         const generatedTracks = await generateTracks.json();
 
-        //Välj ifrån dessa 10 låtar när en användare vill replaca låtar i spellistan. Om det tar slut, gör en till request jao
-        // this.setState({generatedTracks});
-
         let array = this.state.reference.map((track) => track.uri);
-        console.log('Replacing ' + array[indexInTracklist] + ' with ' + generatedTracks[indexInTracklist]);
         array.splice(indexInTracklist, 1, generatedTracks.shift());
 
         const data = {
@@ -79,10 +97,39 @@ class Playlist extends Component {
             tracks: array
         };
 
-        const response = await fetch('/api/replace-track', requestOptions(data, 'POST'));
-        console.log(response);
+        let response = await fetch('/api/replace-track', requestOptions(data, 'POST'));
+        await this.getTracklist();
+
+        if (response.status === 401 || generateTracks.status === 401) {
+            this.setState({showFlashMessage: true});
+            this.setState({flashType: 'danger'});
+            this.setState({flashMessage: 'You encountered an error. Please try again!'});
+        } else {
+            this.setState({showFlashMessage: true});
+            this.setState({flashType: 'success'});
+            this.setState({flashMessage: trackToBeReplaced + ' was successfully replaced with ' + this.state.reference[indexInTracklist].title + '!'});
+        }
         
-        this.getTracklist();
+    }
+
+    getTotalPlayTime() {
+        let sumMinutes = 0;
+        let sumSeconds = 0;
+
+        this.state.reference.map((track, i) => {
+            sumMinutes += parseInt(track.duration.substring(0, 1));
+        })
+
+        this.state.reference.map((track, i) => {
+            let seconds = track.duration.substring(2, track.duration.length);
+            if (seconds.charAt(0) === '0') {
+                sumSeconds += parseInt(seconds.substring(1, seconds.length));
+            }
+            sumSeconds += parseInt(seconds);
+        })
+
+        let totalPlaytime = (sumMinutes + Math.floor(sumSeconds / 60)) + ' min ' + (sumSeconds - Math.floor(sumSeconds / 60) * 60) + ' sec';
+        this.setState({totalPlaytime});
     }
     
     render() {
@@ -95,33 +142,43 @@ class Playlist extends Component {
                                 <Col md={3}>
                                     <p><strong>{this.props.name}</strong></p>
                                 </Col>
-                                <Col md={3}> 
-                                    <Badge >{this.props.totalTracks}</Badge>
-                                </Col>
                                 <Col md={3}>
-                                    <a href={this.props.externalUrl}>Open in Spotify</a>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col md={3}>
-                                    <p>Title</p>
-                                </Col>
-                                <Col md={3}>
-                                    <p>Artist</p>
-                                </Col>
-                                <Col md={3}> 
-                                    <p>Album</p>
-                                </Col>
-                                <Col md={3}>
-                                    <Glyphicon glyph="glyphicon glyphicon-time" />
+                                    <a href={this.props.externalUrl}>
+                                        <Glyphicon glyph="glyphicon glyphicon-new-window" />
+                                        Open in Spotify
+                                    </a>
                                 </Col>
                             </Row>
                         </Panel.Title>
                     </Panel.Heading>
-                    <div className="panel-tracklist">
+                    <Row className="playlist-titles">
+                        <Col md={3}>
+                            <p>Title</p>
+                        </Col>
+                        <Col md={3}>
+                            <p>Artist</p>
+                        </Col>
+                        <Col md={3}> 
+                            <p>Album</p>
+                        </Col>
+                        <Col md={3}>
+                            <Glyphicon glyph="glyphicon glyphicon-time" />
+                        </Col>
+                    </Row>
+                </Panel>
+                
+                <div className="panel-tracklist">
                         {this.state.tracklist}
                     </div>
-                </Panel>
+                <Row>
+                    {this.state.showFlashMessage ? (
+                        <FlashMessage type={this.state.flashType} message={this.state.flashMessage} handleDismiss={this.handleDismiss}/>
+                    ) : (
+                        <p className="library-footer">
+                            {this.props.totalTracks + ' songs, ' + this.state.totalPlaytime}
+                        </p>
+                    )}
+                </Row>
             </div>
         );
     }

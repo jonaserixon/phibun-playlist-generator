@@ -70,7 +70,7 @@ const searchSpotify = (tracks, access_token, count) => {
                     resolve(parsedTrack.tracks.items[0]);
                 }
             } catch(err) {
-                reject(err);
+                throw new Error(err);
             }
         })
     })
@@ -80,7 +80,7 @@ const searchSpotify = (tracks, access_token, count) => {
             const uris = result.filter(uri => uri);
             return randomTracklist(count, uris);
         }).catch((err) => {
-            throw new Error(err);
+            // throw new Error(err);
         })
 }
 
