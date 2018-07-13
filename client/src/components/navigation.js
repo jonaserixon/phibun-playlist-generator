@@ -62,9 +62,10 @@ class Navigation extends Component {
                         <Glyphicon glyph={"glyphicon glyphicon-log-out"} className="dashboard-icon"/>
                         Logout
                     </NavItem>
+                    <NavItem disabled>
 
                     <Profile usernameCallback={this.setUsername} callback={this.props.callback}/>
-
+                    </NavItem>
                 </Nav>
             </div>
         );

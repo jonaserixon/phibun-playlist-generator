@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import {Panel, Grid, Row, Col} from 'react-bootstrap';
 import { BrowserRouter as Router, Link, Route, Switch } from 'react-router-dom';
 import Navigation from './navigation';
-import Profile from './profile';
 import Generator from './generator';
 import Library from './library';
 import Home from './home';
+
 class Content extends Component {
     constructor(props) {
         super(props);

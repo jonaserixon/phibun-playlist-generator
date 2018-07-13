@@ -15,7 +15,7 @@ class Playlist extends Component {
             showFlashMessage: false,
             flashType: '',
             flashMessage: '',
-            isGenerating: ''
+            generateMessage: ''
         };
 
         this.generateNewTrack = this.generateNewTrack.bind(this);
@@ -35,6 +35,7 @@ class Playlist extends Component {
 
         const response = await fetch('/api/playlist-tracks', requestOptions(data, 'POST'));
         const json = await response.json();
+
         this.setState({reference: json}, () => {
             this.createTracklist();
             return;
@@ -71,6 +72,7 @@ class Playlist extends Component {
                 </ListGroupItem>
             )
         );
+        
         this.setState({tracklist});
         this.getTotalPlayTime();
     }
@@ -87,7 +89,7 @@ class Playlist extends Component {
         let indexInTracklist = event.target.dataset.trackPosition;
         let trackToBeReplaced = this.state.reference[indexInTracklist].title
 
-        this.setState({isGenerating: 'Replacing ' + trackToBeReplaced + 'and generating a new track...'});       
+        this.setState({generateMessage: 'Replacing ' + trackToBeReplaced + ' and generating a new track...'});       
 
         const generateTracks = await fetch('/api/generate-track', requestOptions({access_token: localStorage.getItem('access_token')}, 'POST'));
         const generatedTracks = await generateTracks.json();
@@ -110,11 +112,11 @@ class Playlist extends Component {
             this.setState({flashType: 'danger'});
             this.setState({flashMessage: 'You encountered an error. Please try again!'});
         } else {
-            this.setState({isGenerating: ''});       
             this.setState({showFlashMessage: true});
             this.setState({flashType: 'success'});
             this.setState({flashMessage: trackToBeReplaced + ' was successfully replaced with ' + this.state.reference[indexInTracklist].title + '!'});
-        }    
+        }
+        this.setState({generateMessage: ''}); 
     }
 
     getTotalPlayTime() {
@@ -153,6 +155,24 @@ class Playlist extends Component {
                                         Open in Spotify
                                     </a>
                                 </Col>
+                                <Col md={3}>
+                                    <div className="generate-message">
+                                        <p>
+                                            {this.props.totalTracks + ' songs, ' + this.state.totalPlaytime}
+                                        </p>
+                                    </div>
+                                </Col>
+                                <Col md={3}>
+                                    {this.state.showFlashMessage ? (
+                                        <FlashMessage type={this.state.flashType} message={this.state.flashMessage} handleDismiss={this.handleDismiss}/>
+                                    ) : (
+                                        <div className="generate-message">
+                                            <p>
+                                                {this.state.generateMessage}
+                                            </p>
+                                        </div>
+                                    )}
+                                </Col>
                             </Row>
                         </Panel.Title>
                     </Panel.Heading>
@@ -161,18 +181,7 @@ class Playlist extends Component {
                     {this.state.tracklist}
                 </ListGroup>
                 <Row>
-                    {this.state.showFlashMessage ? (
-                        <FlashMessage type={this.state.flashType} message={this.state.flashMessage} handleDismiss={this.handleDismiss}/>
-                    ) : (
-                        <div className="playlist-footer">
-                            <p>
-                                {this.state.isGenerating}
-                            </p>
-                            <p>
-                                {this.props.totalTracks + ' songs, ' + this.state.totalPlaytime}
-                            </p>
-                        </div>
-                    )}
+                    
                 </Row>
             </div>
         );

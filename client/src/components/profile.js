@@ -36,17 +36,13 @@ class Profile extends Component {
     render() {
         let renderThis;
         if (this.state.isLoading) {
-            renderThis = <p>Loading photo, please wait...</p>
+            renderThis = <p>Loading profile, please wait...</p>
         } else {
             renderThis = (
-                <Row>
-                <Col md={6}>
-                    <p style={{color: 'ghostwhite', fontSize: '12px'}}>Logged in as {this.state.userInfo.id}</p>
-                </Col>
-                <Col md={1}>
-                    <Image src={this.state.userInfo.images[0].url} width={"30px"} circle/>
-                </Col>
-                </Row>
+                <div>
+                    <p style={{color: 'ghostwhite', fontSize: '12px', margin: '0px'}}>{this.state.userInfo.id}</p>
+                    {/* <Image src={this.state.userInfo.images[0].url} width={"30px"} circle/> */}
+                </div>
             )
         }
 

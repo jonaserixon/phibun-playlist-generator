@@ -46,8 +46,11 @@ const getUserInfo = async (access_token) => {
 }
 
 const searchSpotify = (tracks, access_token, count) => {
-    const promises = tracks.map((track) => {
+    const promises = tracks
+    .filter((track) => track.title !== '')
+    .map((track) => {
         return new Promise(async (resolve, reject) => {
+            
             const options = {
                 url: 'https://api.spotify.com/v1/search',
                 qs: {
@@ -70,6 +73,7 @@ const searchSpotify = (tracks, access_token, count) => {
                     resolve(parsedTrack.tracks.items[0]);
                 }
             } catch(err) {
+                console.log(options)
                 reject(err);
             }
         })
