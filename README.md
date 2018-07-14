@@ -30,3 +30,31 @@ REDDIT_USER_AGENT=<Your Reddit User Agent string (Link below for more info)>
 
 5. `cd ..` and run `npm start`
 6. Navigate to http://localhost:3000 in any browser
+
+# Functionalities
+
+## Generate Playlist with songs from various subreddits
+
+Enter a name for your Spotify playlist and click on "Create Playlist" in order to generate it. The playlist will consist of 10 songs.
+
+<img src="https://i.imgur.com/T6DiHCY.jpg" alt="Generate playlist" width="800px"/>
+
+## View generated playlists and replace individual songs
+
+### View
+By navigating to the "Your Playlists" tab you can view all your generated playlists.
+
+<img src="https://i.imgur.com/hM2hSY0.jpg" alt="View playlist" width="800px"/>
+
+### Replacing songs
+
+By clicking on the blue replace button you can replace any individual song in your playlists.
+
+1. Generate a new song 
+<img src="https://i.imgur.com/e4J3FAU.png" alt="Replace song" width="800px"/>
+
+2. Replace the previous song with the newly generated one
+<img src="https://i.imgur.com/E1L8lU0.jpg" alt="Replace song" width="800px"/>
+
+3. Listen to your awesome playlist in Spotify!
+<img src="https://i.imgur.com/KFUDDht.png" alt="Replace song" width="800px"/>

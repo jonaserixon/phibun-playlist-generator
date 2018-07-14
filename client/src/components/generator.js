@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Grid, Row, Col, Button, Form, FormGroup, FormControl, ControlLabel} from 'react-bootstrap';
 
 import {requestOptions} from '../helpers/requestOptions';
+import FlashMessage from './flashMessage';
 
 class Generator extends Component {
     constructor(props) {
@@ -10,19 +11,28 @@ class Generator extends Component {
         this.state = {
             creatingPlaylist: false,
             playlistCompleted: false,
+            showFlashMessage: false,
+            flashType: '',
             flashMessage: '',
-            playlist: [],
-            tracklist: [],
         };
 
         this.handleOnClick = this.handleOnClick.bind(this);
+        this.handleDismiss = this.handleDismiss.bind(this);
+        this.handleShow = this.handleShow.bind(this);
+    }
+
+    handleDismiss() {
+        this.setState({showFlashMessage: false});
+    }
+
+    handleShow() {
+        this.setState({showFlashMessage: true});
     }
 
     async handleOnClick(event) {
         event.preventDefault();
         this.setState({creatingPlaylist: true});
         this.setState({playlistCompleted: false});
-        this.setState({flashMessage: ''});
 
         let playlist_name = event.target.elements.playlistName.value;
 
@@ -38,12 +48,17 @@ class Generator extends Component {
         const json = await response.json();
 
         if (response.status === 401) {
-            this.setState({flashMessage: 'Error, please try again'});
+            this.setState({showFlashMessage: true});
+            this.setState({flashType: 'danger'});
+            this.setState({flashMessage: 'You encountered an error. Please try again!'});
         } else if (response.status === 502) {
             this.handleOnClick();
         } else {
             this.setState({creatingPlaylist: false});
             this.setState({playlistCompleted: true});
+            this.setState({showFlashMessage: true});
+            this.setState({flashType: 'success'});
+            this.setState({flashMessage: 'Your playlist was successfully created!'});
         }
         
         console.log(json);
@@ -76,8 +91,6 @@ class Generator extends Component {
     render() {
         let buttonText = 'Create Playlist!';
         let toRender = '';
-        let playlist;
-        let tracklist;
         
         if (this.state.creatingPlaylist) {
             buttonText = 'Creating playlist...';
@@ -85,15 +98,9 @@ class Generator extends Component {
 
         if (this.state.playlistCompleted) {
             buttonText = 'Create Playlist!';
-            toRender = <p>Playlist created</p>
-        }
-
-        if (this.state.flashMessage.length > 1) {
-            toRender = <p>{this.state.flashMessage}</p>
-        }
-
-        if (this.state.playlist.length > 0) {
-            playlist = <Button bsStyle="primary" name="replace" >View your playlist (a link to the playlist in the library view)</Button>
+            toRender = <FlashMessage type={this.state.flashType} message={this.state.flashMessage} handleDismiss={this.handleDismiss}/>
+        } else {
+            toRender = '';
         }
 
 
@@ -118,14 +125,6 @@ class Generator extends Component {
                         </FormGroup>
                     </Form>
                     {toRender}
-                    <Row>
-                        <Col md={2}>
-                            {playlist}
-                        </Col>
-                        <Col md={4}>
-                            {tracklist}
-                        </Col>
-                    </Row>
                 </Grid>
             </div>
         );
