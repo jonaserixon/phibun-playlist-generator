@@ -45,7 +45,7 @@ class Playlist extends Component {
     createTracklist() {
         let tracklist = [];
 
-        this.state.reference.map((track, i) => 
+        this.state.reference.map((track, i) => {
             tracklist.push(
                 <ListGroupItem>
                 <Row className="track">
@@ -63,14 +63,14 @@ class Playlist extends Component {
                     </Col>
                     <Col md={1}>
                     <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip">Replace "<strong>{track.title}</strong>" by generating a new track!</Tooltip>}>
-                        <Button bsStyle="primary" bsSize="small" data-track-uri={track.uri} data-track-position={i} onClick={this.generateNewTrack}>
-                            <Glyphicon className="replace-button" glyph="glyphicon glyphicon-refresh" />
+                        <Button bsStyle="primary" bsSize="small" data-track-uri={track.uri} data-trackposition={i} onClick={this.generateNewTrack}>
+                            REPLACE
                         </Button>
                     </OverlayTrigger>
                     </Col>
                 </Row>
                 </ListGroupItem>
-            )
+            )}
         );
         
         this.setState({tracklist});
@@ -86,7 +86,7 @@ class Playlist extends Component {
     }
 
     async generateNewTrack(event) { 
-        let indexInTracklist = event.target.dataset.trackPosition;
+        let indexInTracklist = event.target.getAttribute('data-trackposition');
         let trackToBeReplaced = this.state.reference[indexInTracklist].title
 
         this.setState({generateMessage: 'Replacing ' + trackToBeReplaced + ' and generating a new track...'});       

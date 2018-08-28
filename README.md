@@ -8,6 +8,8 @@ Application using [Spotify's Web API](https://developer.spotify.com/documentatio
 
 Developed using ReactJS with React-Bootstrap for the client and ExpressJS on the server.
 
+<img src="https://i.imgur.com/1838paq.gif" alt="video" width="800px"/>
+
 ### API Authorization Flows (Spotify & Reddit)
  * [Authorization Code](https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow) for the Spotify API
  * [Application Only Oauth](https://github.com/reddit-archive/reddit/wiki/OAuth2#application-only-oauth) for the Reddit API
